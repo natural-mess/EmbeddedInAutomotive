@@ -1,5 +1,7 @@
 # Bài 1: Setup chương trình đầu tiên trên KeilC
 
+Full project: [Bai1-Project](../Bai1-Project/)
+
 ## I. Setup IDE
 ### 1. Cài đặt KeilC
 - Vào trang web https://www.keil.arm.com/mdk-community/
