@@ -1,0 +1,15 @@
+--cpu=Cortex-M4.fp.sp --branchpatch=sdcomp-29491-629360
+"pj1-blinkled_timer_ll\startup_stm32l476xx.o"
+"pj1-blinkled_timer_ll\main.o"
+"pj1-blinkled_timer_ll\stm32l4xx_it.o"
+"pj1-blinkled_timer_ll\stm32l4xx_ll_utils.o"
+"pj1-blinkled_timer_ll\stm32l4xx_ll_exti.o"
+"pj1-blinkled_timer_ll\stm32l4xx_ll_gpio.o"
+"pj1-blinkled_timer_ll\stm32l4xx_ll_pwr.o"
+"pj1-blinkled_timer_ll\stm32l4xx_ll_tim.o"
+"pj1-blinkled_timer_ll\stm32l4xx_ll_dma.o"
+"pj1-blinkled_timer_ll\system_stm32l4xx.o"
+--strict --scatter "Pj1-BlinkLED_Timer_LL\Pj1-BlinkLED_Timer_LL.sct"
+--summary_stderr --info summarysizes --map --load_addr_map_info --xref --callgraph --symbols
+--info sizes --info totals --info unused --info veneers
+--list "Pj1-BlinkLED_Timer_LL.map" -o Pj1-BlinkLED_Timer_LL\Pj1-BlinkLED_Timer_LL.axf
