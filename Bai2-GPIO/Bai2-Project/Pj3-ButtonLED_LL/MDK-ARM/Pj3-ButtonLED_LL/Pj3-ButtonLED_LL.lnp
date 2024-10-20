@@ -1,0 +1,13 @@
+--cpu=Cortex-M4.fp.sp --branchpatch=sdcomp-29491-629360
+"pj3-buttonled_ll\startup_stm32l476xx.o"
+"pj3-buttonled_ll\main.o"
+"pj3-buttonled_ll\stm32l4xx_it.o"
+"pj3-buttonled_ll\stm32l4xx_ll_utils.o"
+"pj3-buttonled_ll\stm32l4xx_ll_exti.o"
+"pj3-buttonled_ll\stm32l4xx_ll_gpio.o"
+"pj3-buttonled_ll\stm32l4xx_ll_pwr.o"
+"pj3-buttonled_ll\system_stm32l4xx.o"
+--strict --scatter "Pj3-ButtonLED_LL\Pj3-ButtonLED_LL.sct"
+--summary_stderr --info summarysizes --map --load_addr_map_info --xref --callgraph --symbols
+--info sizes --info totals --info unused --info veneers
+--list "Pj3-ButtonLED_LL.map" -o Pj3-ButtonLED_LL\Pj3-ButtonLED_LL.axf

@@ -1,0 +1,13 @@
+--cpu=Cortex-M4.fp.sp --branchpatch=sdcomp-29491-629360
+"pj2-chaseled\startup_stm32l476xx.o"
+"pj2-chaseled\main.o"
+"pj2-chaseled\stm32l4xx_it.o"
+"pj2-chaseled\stm32l4xx_ll_utils.o"
+"pj2-chaseled\stm32l4xx_ll_exti.o"
+"pj2-chaseled\stm32l4xx_ll_gpio.o"
+"pj2-chaseled\stm32l4xx_ll_pwr.o"
+"pj2-chaseled\system_stm32l4xx.o"
+--strict --scatter "Pj2-ChaseLED\Pj2-ChaseLED.sct"
+--summary_stderr --info summarysizes --map --load_addr_map_info --xref --callgraph --symbols
+--info sizes --info totals --info unused --info veneers
+--list "Pj2-ChaseLED.map" -o Pj2-ChaseLED\Pj2-ChaseLED.axf
