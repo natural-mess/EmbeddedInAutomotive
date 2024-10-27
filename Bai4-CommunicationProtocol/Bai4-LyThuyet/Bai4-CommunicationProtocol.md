@@ -37,6 +37,58 @@ SPI thường yêu cầu bốn chân cho mỗi thiết bị - một chân để 
 - Các thanh ghi cập nhật giá trị và dịch 1 bit.
 - Lặp lại quá trình trên đến khi truyền xong 8 bit trong thanh ghi.
 
+### 4 chế dộ SPI
+SPI (Serial Peripheral Interface) có 4 chế độ hoạt động khác nhau, được xác định dựa trên độ phân cực của xung clock (CPOL - Clock Polarity) và pha của xung clock (CPHA - Clock Phase). Sự kết hợp giữa hai yếu tố này quyết định cách dữ liệu được lấy mẫu (sampling) và cách các tín hiệu clock hoạt động. Cụ thể, các chế độ SPI được chia như sau:
+
+Các yếu tố cơ bản:
+- CPOL (Clock Polarity): Xác định trạng thái mặc định của xung clock khi không truyền dữ liệu.
+  - CPOL = 0: Xung clock (SCK) ở mức thấp khi không hoạt động (idle).
+  - CPOL = 1: Xung clock (SCK) ở mức cao khi không hoạt động (idle).
+- CPHA (Clock Phase): Xác định cạnh của xung clock mà tại đó dữ liệu được lấy mẫu và truyền.
+  - CPHA = 0: Dữ liệu được lấy mẫu tại cạnh đầu tiên (cạnh lên hoặc cạnh xuống, tùy thuộc vào CPOL).
+  - CPHA = 1: Dữ liệu được lấy mẫu tại cạnh thứ hai (cạnh lên hoặc cạnh xuống, tùy thuộc vào CPOL).
+
+| Chế độ SPI | CPOL | CPHA | Trạng thái xung nhịp khi idle | Lấy mẫu dữ liệu      |
+|------------|------|------|-------------------------------|----------------------|
+| **Mode 0** | 0    | 0    | SCK ở mức thấp                 | Cạnh lên đầu tiên     |
+| **Mode 1** | 0    | 1    | SCK ở mức thấp                 | Cạnh xuống thứ hai    |
+| **Mode 2** | 1    | 0    | SCK ở mức cao                  | Cạnh xuống đầu tiên   |
+| **Mode 3** | 1    | 1    | SCK ở mức cao                  | Cạnh lên thứ hai      |
+
+**1. SPI Mode 0 (CPOL = 0, CPHA = 0)**
+- Trạng thái idle của SCK: Mức thấp (0).
+- Dữ liệu được lấy mẫu (sampling): Tại cạnh lên (rising edge) đầu tiên của xung nhịp SCK.
+- Quá trình truyền dữ liệu:
+  - Dữ liệu được xuất ra từ MOSI của Master (hoặc MISO của Slave) khi xung clock ở cạnh xuống (falling edge).
+  - Dữ liệu được lấy mẫu ở cạnh lên đầu tiên (đầu chu kỳ xung nhịp).
+
+Ở chế độ này, dữ liệu được chốt (sampled) khi xung clock chuyển từ mức thấp lên mức cao.
+
+**2. SPI Mode 1 (CPOL = 0, CPHA = 1)**
+- Trạng thái idle của SCK: Mức thấp (0).
+- Dữ liệu được lấy mẫu: Tại cạnh xuống (falling edge) thứ hai của xung nhịp SCK.
+- Quá trình truyền dữ liệu:
+  - Dữ liệu được xuất ra tại cạnh lên (rising edge).
+  - Dữ liệu được lấy mẫu tại cạnh xuống thứ hai của xung nhịp.
+
+Ở chế độ này, dữ liệu được chốt khi xung clock chuyển từ mức cao xuống mức thấp, nhưng dữ liệu được xuất ra vào cạnh lên thứ hai của xung nhịp.
+
+**3. SPI Mode 2 (CPOL = 1, CPHA = 0)**
+- Trạng thái idle của SCK: Mức cao (1).
+- Dữ liệu được lấy mẫu: Tại cạnh xuống (falling edge) đầu tiên của xung nhịp SCK.
+- Quá trình truyền dữ liệu:
+  - Dữ liệu được xuất ra tại cạnh lên (rising edge).
+  - Dữ liệu được lấy mẫu tại cạnh xuống đầu tiên của xung nhịp.
+
+Ở chế độ này, xung clock bắt đầu từ mức cao và dữ liệu được chốt tại cạnh xuống đầu tiên của xung clock (khi nó chuyển từ cao xuống thấp).
+
+**4. SPI Mode 3 (CPOL = 1, CPHA = 1)**
+- Trạng thái idle của SCK: Mức cao (1).
+- Dữ liệu được lấy mẫu: Tại cạnh lên (rising edge) thứ hai của xung nhịp SCK.
+- Quá trình truyền dữ liệu:
+  - Dữ liệu được xuất ra tại cạnh xuống (falling edge).
+  - Dữ liệu được lấy mẫu tại cạnh lên thứ hai của xung nhịp.
+
 ### 2. I2C
 I2C (Inter-Integrated Circuit), được phát triển bởi Philips Semiconductor, là một giao thức truyền thông nối tiếp được sử dụng để kết nối các thiết bị ngoại vi với vi điều khiển. Nó chỉ sử dụng hai dây dẫn: SDA (dữ liệu) và SCL (đồng hồ) để truyền dữ liệu giữa các thiết bị.
 

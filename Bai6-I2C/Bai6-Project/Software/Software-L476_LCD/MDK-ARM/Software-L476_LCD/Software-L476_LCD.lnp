@@ -1,0 +1,15 @@
+--cpu=Cortex-M4.fp.sp --branchpatch=sdcomp-29491-629360
+"software-l476_lcd\startup_stm32l476xx.o"
+"software-l476_lcd\main.o"
+"software-l476_lcd\stm32l4xx_it.o"
+"software-l476_lcd\stm32l4xx_ll_utils.o"
+"software-l476_lcd\stm32l4xx_ll_exti.o"
+"software-l476_lcd\stm32l4xx_ll_gpio.o"
+"software-l476_lcd\stm32l4xx_ll_pwr.o"
+"software-l476_lcd\stm32l4xx_ll_tim.o"
+"software-l476_lcd\stm32l4xx_ll_dma.o"
+"software-l476_lcd\system_stm32l4xx.o"
+--strict --scatter "Software-L476_LCD\Software-L476_LCD.sct"
+--summary_stderr --info summarysizes --map --load_addr_map_info --xref --callgraph --symbols
+--info sizes --info totals --info unused --info veneers
+--list "Software-L476_LCD.map" -o Software-L476_LCD\Software-L476_LCD.axf

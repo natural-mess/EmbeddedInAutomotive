@@ -15,3 +15,11 @@ Using STM32 to learn about Automotive
 
 ### Bài 4 - Communication protocol
 - [Bài 4 - Lý thuyết](Bai4-CommunicationProtocol/Bai4-LyThuyet/Bai4-CommunicationProtocol.md)
+
+### Bài 5 - SPI
+- [Bài 5 - Lý thuyết](Bai5-SPI/Bai5-LyThuyet/Bai5-SPI.md)
+- [Bài 5 - Project](Bai5-SPI/Bai5-Project/)
+
+### Bài 6 - I2C
+- [Bài 6 - Lý thuyết](Bai6-I2C/Bai6-LyThuyet/Bai6-I2C.md)
+- [Bài 6 - Project](Bai6-I2C/Bai6-Project/)

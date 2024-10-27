@@ -1,0 +1,15 @@
+--cpu=Cortex-M4.fp.sp
+"software-f446_slave\startup_stm32f446xx.o"
+"software-f446_slave\main.o"
+"software-f446_slave\stm32f4xx_it.o"
+"software-f446_slave\stm32f4xx_ll_gpio.o"
+"software-f446_slave\stm32f4xx_ll_tim.o"
+"software-f446_slave\stm32f4xx_ll_dma.o"
+"software-f446_slave\stm32f4xx_ll_rcc.o"
+"software-f446_slave\stm32f4xx_ll_utils.o"
+"software-f446_slave\stm32f4xx_ll_exti.o"
+"software-f446_slave\system_stm32f4xx.o"
+--strict --scatter "Software-F446_Slave\Software-F446_Slave.sct"
+--summary_stderr --info summarysizes --map --load_addr_map_info --xref --callgraph --symbols
+--info sizes --info totals --info unused --info veneers
+--list "Software-F446_Slave.map" -o Software-F446_Slave\Software-F446_Slave.axf
