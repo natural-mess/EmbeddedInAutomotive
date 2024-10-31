@@ -44,8 +44,10 @@
 /* USER CODE BEGIN PV */
 volatile uint8_t dataTrans[] = {7, 8, 4, 2};
 volatile uint8_t receivedData;
+volatile uint8_t sentData;
 volatile uint8_t counterReceive = 0;
 volatile uint8_t counterSend = 0;
+volatile uint8_t dummyRead;
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -103,7 +105,7 @@ int main(void)
   MX_SPI2_Init();
   MX_TIM2_Init();
   /* USER CODE BEGIN 2 */
-
+	LL_SPI_Enable(SPI2);
   /* USER CODE END 2 */
 
   /* Infinite loop */
@@ -115,19 +117,28 @@ int main(void)
     /* USER CODE BEGIN 3 */
 		counterReceive = 0;
 		counterSend = 0;
-		for (uint8_t i = 0; i < ARRAY_SIZE; i++) 
-		{
-				receivedData = SPI_ReceiveData();
-			  counterReceive++;
-    }
-
-    for (uint8_t i = 0; i < ARRAY_SIZE; i++) 
-		{
-      SPI_SendData(dataTrans[i]);
-			counterSend++;
-    }
 		receivedData = 0;
-
+		
+		while (LL_GPIO_IsInputPinSet(GPIOB, LL_GPIO_PIN_12));
+		for (int i = 0; i< ARRAY_SIZE; i++)
+		{
+			receivedData = SPI_ReceiveData();
+			counterReceive++;
+		}
+		while (!LL_GPIO_IsInputPinSet(GPIOB, LL_GPIO_PIN_12));
+		receivedData = 0;
+		while (LL_GPIO_IsInputPinSet(GPIOB, LL_GPIO_PIN_12))
+			;
+    while (counterSend < ARRAY_SIZE) 
+		{
+			SPI_SendData(dataTrans[counterSend]);
+			counterSend++;
+			dummyRead = SPI_ReceiveData();
+			(void)dummyRead;
+    }
+				
+		while (!LL_GPIO_IsInputPinSet(GPIOB, LL_GPIO_PIN_12));
+		
   }
   /* USER CODE END 3 */
 }
@@ -152,7 +163,7 @@ void SystemClock_Config(void)
   {
 
   }
-  LL_RCC_SetAHBPrescaler(LL_RCC_SYSCLK_DIV_1);
+  LL_RCC_SetAHBPrescaler(LL_RCC_SYSCLK_DIV_4);
   LL_RCC_SetAPB1Prescaler(LL_RCC_APB1_DIV_1);
   LL_RCC_SetAPB2Prescaler(LL_RCC_APB2_DIV_1);
   LL_RCC_SetSysClkSource(LL_RCC_SYS_CLKSOURCE_HSI);
@@ -162,8 +173,8 @@ void SystemClock_Config(void)
   {
 
   }
-  LL_Init1msTick(16000000);
-  LL_SetSystemCoreClock(16000000);
+  LL_Init1msTick(4000000);
+  LL_SetSystemCoreClock(4000000);
   LL_RCC_SetTIMPrescaler(LL_RCC_TIM_PRESCALER_TWICE);
 }
 
@@ -192,7 +203,7 @@ static void MX_SPI2_Init(void)
   PC2   ------> SPI2_MISO
   PC3   ------> SPI2_MOSI
   PB10   ------> SPI2_SCK
-	PB12  -------> SPI2_NSS
+  PB12   ------> SPI2_NSS
   */
   GPIO_InitStruct.Pin = LL_GPIO_PIN_2|LL_GPIO_PIN_3;
   GPIO_InitStruct.Mode = LL_GPIO_MODE_ALTERNATE;
@@ -210,7 +221,6 @@ static void MX_SPI2_Init(void)
   GPIO_InitStruct.Alternate = LL_GPIO_AF_5;
   LL_GPIO_Init(GPIOB, &GPIO_InitStruct);
 
-
   /* USER CODE BEGIN SPI2_Init 1 */
 
   /* USER CODE END SPI2_Init 1 */
@@ -220,15 +230,14 @@ static void MX_SPI2_Init(void)
   SPI_InitStruct.DataWidth = LL_SPI_DATAWIDTH_8BIT;
   SPI_InitStruct.ClockPolarity = LL_SPI_POLARITY_LOW;
   SPI_InitStruct.ClockPhase = LL_SPI_PHASE_1EDGE;
-  SPI_InitStruct.NSS = LL_SPI_NSS_SOFT;
-	SPI_InitStruct.BaudRate = LL_SPI_BAUDRATEPRESCALER_DIV128;
+  SPI_InitStruct.NSS = LL_SPI_NSS_HARD_INPUT;
   SPI_InitStruct.BitOrder = LL_SPI_MSB_FIRST;
   SPI_InitStruct.CRCCalculation = LL_SPI_CRCCALCULATION_DISABLE;
-  SPI_InitStruct.CRCPoly = 0;
+  SPI_InitStruct.CRCPoly = 10;
   LL_SPI_Init(SPI2, &SPI_InitStruct);
   LL_SPI_SetStandard(SPI2, LL_SPI_PROTOCOL_MOTOROLA);
   /* USER CODE BEGIN SPI2_Init 2 */
-	LL_SPI_Enable(SPI2);
+	
   /* USER CODE END SPI2_Init 2 */
 
 }
@@ -253,9 +262,9 @@ static void MX_TIM2_Init(void)
   /* USER CODE BEGIN TIM2_Init 1 */
 
   /* USER CODE END TIM2_Init 1 */
-  TIM_InitStruct.Prescaler = 1600-1;
+  TIM_InitStruct.Prescaler = 1600-LL_TIM_IC_FILTER_FDIV1_N2;
   TIM_InitStruct.CounterMode = LL_TIM_COUNTERMODE_UP;
-  TIM_InitStruct.Autoreload = 10-1;
+  TIM_InitStruct.Autoreload = LL_TIM_IC_FILTER_FDIV16_N5-LL_TIM_IC_FILTER_FDIV1_N2;
   TIM_InitStruct.ClockDivision = LL_TIM_CLOCKDIVISION_DIV1;
   LL_TIM_Init(TIM2, &TIM_InitStruct);
   LL_TIM_DisableARRPreload(TIM2);
@@ -275,19 +284,13 @@ static void MX_TIM2_Init(void)
   */
 static void MX_GPIO_Init(void)
 {
-  LL_GPIO_InitTypeDef GPIO_InitStruct = {0};
 /* USER CODE BEGIN MX_GPIO_Init_1 */
 /* USER CODE END MX_GPIO_Init_1 */
 
   /* GPIO Ports Clock Enable */
   LL_AHB1_GRP1_EnableClock(LL_AHB1_GRP1_PERIPH_GPIOC);
   LL_AHB1_GRP1_EnableClock(LL_AHB1_GRP1_PERIPH_GPIOB);
-	
-	GPIO_InitStruct.Pin = LL_GPIO_PIN_4;
-	GPIO_InitStruct.Speed = LL_GPIO_SPEED_FREQ_VERY_HIGH;
-  GPIO_InitStruct.Mode = LL_GPIO_MODE_INPUT;
-  GPIO_InitStruct.Pull = LL_GPIO_PULL_UP;
-  LL_GPIO_Init(GPIOB, &GPIO_InitStruct);
+
 /* USER CODE BEGIN MX_GPIO_Init_2 */
 /* USER CODE END MX_GPIO_Init_2 */
 }
@@ -307,11 +310,12 @@ void delay_ms(uint32_t timeDelay)
 /* Gui du lieu tu Slave sang Master */
 void SPI_SendData(uint8_t data) 
 {
-	while (LL_GPIO_IsInputPinSet(GPIOB, LL_GPIO_PIN_12));
+	//while (LL_GPIO_IsInputPinSet(GPIOB, LL_GPIO_PIN_12));
 	
   // Doi cho TXE (Transmit Data Register Empty)
   while (!LL_SPI_IsActiveFlag_TXE(SPI2));
-
+	
+	sentData = data;
   // Gui du lieu
   LL_SPI_TransmitData8(SPI2, data);
 
@@ -319,11 +323,10 @@ void SPI_SendData(uint8_t data)
   while (LL_SPI_IsActiveFlag_BSY(SPI2));
 	
 	// Ð?i cho d?n khi có d? li?u nh?n (RXNE flag du?c set)
-   // while (!LL_SPI_IsActiveFlag_RXNE(SPI2));
-
-    (void)LL_SPI_ReceiveData8(SPI2);
+  //while (!LL_SPI_IsActiveFlag_RXNE(SPI2));
+  //dummyRead = LL_SPI_ReceiveData8(SPI2);
 	
-	while (!LL_GPIO_IsInputPinSet(GPIOB, LL_GPIO_PIN_12));
+	//while (!LL_GPIO_IsInputPinSet(GPIOB, LL_GPIO_PIN_12));
 }
 
 /* Doc du lieu tu Master */
@@ -332,18 +335,20 @@ uint8_t SPI_ReceiveData(void)
 	uint8_t receivedData = 0;
 	// Doi cho BSY (Busy flag) tra ve 0
  //while (LL_SPI_IsActiveFlag_BSY(SPI2));
-  while (LL_GPIO_IsInputPinSet(GPIOB, LL_GPIO_PIN_12));
+  //while (LL_GPIO_IsInputPinSet(GPIOB, LL_GPIO_PIN_12));
 	//while (LL_SPI_IsActiveFlag_BSY(SPI2));
   // Doi cho RXNE (Receive Data Register Not Empty)
   while (!LL_SPI_IsActiveFlag_RXNE(SPI2));
 	
 	receivedData = LL_SPI_ReceiveData8(SPI2);
 	
+	while (LL_SPI_IsActiveFlag_BSY(SPI2));
+	
 	 // G?i m?t dummy byte (0xFF) d? làm m?i b? d?m TX
    // while (!LL_SPI_IsActiveFlag_TXE(SPI2));
     // LL_SPI_TransmitData8(SPI2, 0xFF);
 	
-	while (!LL_GPIO_IsInputPinSet(GPIOB, LL_GPIO_PIN_12));
+	//while (!LL_GPIO_IsInputPinSet(GPIOB, LL_GPIO_PIN_12));
 
   // Doc du lieu nhan duoc
   return receivedData;

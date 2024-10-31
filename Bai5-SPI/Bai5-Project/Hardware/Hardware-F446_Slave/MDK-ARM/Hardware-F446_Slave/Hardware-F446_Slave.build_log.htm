@@ -22,12 +22,24 @@ Dialog DLL:      TCM.DLL V1.56.4.0
  
 <h2>Project:</h2>
 D:\EmbeddedSystem\OnlineCourses\EmbeddedInAutomotive\Content\EmbeddedInAutomotive\Bai5-SPI\Bai5-Project\Hardware\Hardware-F446_Slave\MDK-ARM\Hardware-F446_Slave.uvprojx
-Project File Date:  10/25/2024
+Project File Date:  10/31/2024
 
 <h2>Output:</h2>
 *** Using Compiler 'V6.22', folder: 'C:\Users\leloc\AppData\Local\Keil_v5\ARM\ARMCLANG\Bin'
 Build target 'Hardware-F446_Slave'
-"Hardware-F446_Slave\Hardware-F446_Slave.axf" - 0 Error(s), 0 Warning(s).
+../Src/main.c(265): warning: implicit conversion from 'unsigned long' to 'uint16_t' (aka 'unsigned short') changes value from 4293920320 to 1600 [-Wconstant-conversion]
+  265 |   TIM_InitStruct.Prescaler = 1600-LL_TIM_IC_FILTER_FDIV1_N2;
+      |                            ~ ~~~~^~~~~~~~~~~~~~~~~~~~~~~~~~
+../Src/main.c(345): warning: while loop has empty body [-Wempty-body]
+  345 |         while (LL_SPI_IsActiveFlag_BSY(SPI2));
+      |                                              ^
+../Src/main.c(345): note: put the semicolon on a separate line to silence this warning
+2 warnings generated.
+compiling main.c...
+linking...
+Program Size: Code=2424 RO-data=484 RW-data=8 ZI-data=1640  
+FromELF: creating hex file...
+"Hardware-F446_Slave\Hardware-F446_Slave.axf" - 0 Error(s), 2 Warning(s).
 
 <h2>Software Packages used:</h2>
 
@@ -51,7 +63,7 @@ Package Vendor: Keil
 
    * Component: ARM::CMSIS:CORE@6.1.0
       Include file:  CMSIS/Core/Include/tz_context.h
-Build Time Elapsed:  00:00:00
+Build Time Elapsed:  00:00:01
 </pre>
 </body>
 </html>

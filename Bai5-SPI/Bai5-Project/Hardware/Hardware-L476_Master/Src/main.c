@@ -44,8 +44,10 @@
 /* USER CODE BEGIN PV */
 volatile uint8_t dataTrans[] = {7, 8, 4, 2};
 volatile uint8_t receivedData;
+volatile uint8_t sentData;
 volatile uint8_t counterReceive = 0;
 volatile uint8_t counterSend = 0;
+volatile uint8_t dummyRead;
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -78,14 +80,14 @@ int main(void)
   /* MCU Configuration--------------------------------------------------------*/
 
   /* Reset of all peripherals, Initializes the Flash interface and the Systick. */
-  //LL_APB2_GRP1_EnableClock(LL_APB2_GRP1_PERIPH_SYSCFG);
-  //LL_APB1_GRP1_EnableClock(LL_APB1_GRP1_PERIPH_PWR);
+  //_APB2_GRP1_EnableClock(LL_APB2_GRP1_PERIPH_SYSCFG);
+  //_APB1_GRP1_EnableClock(LL_APB1_GRP1_PERIPH_PWR);
 
   /* System interrupt init*/
-  //NVIC_SetPriorityGrouping(NVIC_PRIORITYGROUP_4);
+  //IC_SetPriorityGrouping(NVIC_PRIORITYGROUP_4);
 
   /* SysTick_IRQn interrupt configuration */
-  //NVIC_SetPriority(SysTick_IRQn, NVIC_EncodePriority(NVIC_GetPriorityGrouping(),15, 0));
+  //IC_SetPriority(SysTick_IRQn, NVIC_EncodePriority(NVIC_GetPriorityGrouping(),15, 0));
 
   /* USER CODE BEGIN Init */
 
@@ -115,22 +117,33 @@ int main(void)
     /* USER CODE BEGIN 3 */
 		counterReceive = 0;
 		counterSend = 0;
+		receivedData = 0;
+		dummyRead = 0;
 		delay_ms(2000);
+		LL_SPI_Enable(SPI2);
 		for (uint8_t i = 0; i < ARRAY_SIZE; i++) 
 		{
+			delay_ms(1000);
       SPI2_TransmitByte(dataTrans[i]);
 			counterSend++;
-			delay_ms(1000);
     }
-		receivedData = 0;
-		delay_ms(2000);
-    for (uint8_t i = 0; i < ARRAY_SIZE; i++) 
+		LL_SPI_Disable(SPI2);
+		delay_ms(3000);
+		// Command de nhan data tu slave
+		
+		LL_SPI_Enable(SPI2);
+    while (counterReceive < ARRAY_SIZE)
 		{
-      receivedData = SPI2_ReceiveByte();
-			counterReceive++;
+			SPI2_TransmitByte(0xFF);
+			if (receivedData != 0xFF)
+			{
+				receivedData = SPI2_ReceiveByte();
+				counterReceive++;
+			}
 			delay_ms(1000);
     }
-		//delay_ms(1000);
+		LL_SPI_Disable(SPI2);
+		
   }
   /* USER CODE END 3 */
 }
@@ -200,7 +213,7 @@ static void MX_SPI2_Init(void)
   PC2   ------> SPI2_MISO
   PC3   ------> SPI2_MOSI
   PB10   ------> SPI2_SCK
-	PB12  ------> SPI2_NSS
+  PB12   ------> SPI2_NSS
   */
   GPIO_InitStruct.Pin = LL_GPIO_PIN_2|LL_GPIO_PIN_3;
   GPIO_InitStruct.Mode = LL_GPIO_MODE_ALTERNATE;
@@ -210,16 +223,7 @@ static void MX_SPI2_Init(void)
   GPIO_InitStruct.Alternate = LL_GPIO_AF_5;
   LL_GPIO_Init(GPIOC, &GPIO_InitStruct);
 
-  GPIO_InitStruct.Pin = LL_GPIO_PIN_10;
-  GPIO_InitStruct.Mode = LL_GPIO_MODE_ALTERNATE;
-  GPIO_InitStruct.Speed = LL_GPIO_SPEED_FREQ_VERY_HIGH;
-  GPIO_InitStruct.OutputType = LL_GPIO_OUTPUT_PUSHPULL;
-  GPIO_InitStruct.Pull = LL_GPIO_PULL_NO;
-  GPIO_InitStruct.Alternate = LL_GPIO_AF_5;
-  LL_GPIO_Init(GPIOB, &GPIO_InitStruct);
-	
-	// NSS
-  GPIO_InitStruct.Pin = LL_GPIO_PIN_12;
+  GPIO_InitStruct.Pin = LL_GPIO_PIN_10|LL_GPIO_PIN_12;
   GPIO_InitStruct.Mode = LL_GPIO_MODE_ALTERNATE;
   GPIO_InitStruct.Speed = LL_GPIO_SPEED_FREQ_VERY_HIGH;
   GPIO_InitStruct.OutputType = LL_GPIO_OUTPUT_PUSHPULL;
@@ -236,17 +240,16 @@ static void MX_SPI2_Init(void)
   SPI_InitStruct.DataWidth = LL_SPI_DATAWIDTH_8BIT;
   SPI_InitStruct.ClockPolarity = LL_SPI_POLARITY_LOW;
   SPI_InitStruct.ClockPhase = LL_SPI_PHASE_1EDGE;
-  SPI_InitStruct.NSS = LL_SPI_NSS_SOFT;
+  SPI_InitStruct.NSS = LL_SPI_NSS_HARD_OUTPUT;
   SPI_InitStruct.BaudRate = LL_SPI_BAUDRATEPRESCALER_DIV32;
   SPI_InitStruct.BitOrder = LL_SPI_MSB_FIRST;
   SPI_InitStruct.CRCCalculation = LL_SPI_CRCCALCULATION_DISABLE;
-  SPI_InitStruct.CRCPoly = 0;
+  SPI_InitStruct.CRCPoly = 7;
   LL_SPI_Init(SPI2, &SPI_InitStruct);
   LL_SPI_SetStandard(SPI2, LL_SPI_PROTOCOL_MOTOROLA);
-  LL_SPI_DisableNSSPulseMgt(SPI2);
+  LL_SPI_EnableNSSPulseMgt(SPI2);
   /* USER CODE BEGIN SPI2_Init 2 */
-	LL_GPIO_SetOutputPin(GPIOB, LL_GPIO_PIN_12);
-	LL_SPI_Enable(SPI2);
+	
   /* USER CODE END SPI2_Init 2 */
 
 }
@@ -293,7 +296,6 @@ static void MX_TIM2_Init(void)
   */
 static void MX_GPIO_Init(void)
 {
-  LL_GPIO_InitTypeDef GPIO_InitStruct = {0};
 /* USER CODE BEGIN MX_GPIO_Init_1 */
 /* USER CODE END MX_GPIO_Init_1 */
 
@@ -301,19 +303,7 @@ static void MX_GPIO_Init(void)
   LL_AHB2_GRP1_EnableClock(LL_AHB2_GRP1_PERIPH_GPIOC);
   LL_AHB2_GRP1_EnableClock(LL_AHB2_GRP1_PERIPH_GPIOB);
 
-  /**/
-  LL_GPIO_ResetOutputPin(GPIOB, LL_GPIO_PIN_5);
-
-  /**/
-  GPIO_InitStruct.Pin = LL_GPIO_PIN_5;
-  GPIO_InitStruct.Mode = LL_GPIO_MODE_OUTPUT;
-  GPIO_InitStruct.Speed = LL_GPIO_SPEED_FREQ_VERY_HIGH;
-  GPIO_InitStruct.OutputType = LL_GPIO_OUTPUT_PUSHPULL;
-  GPIO_InitStruct.Pull = LL_GPIO_PULL_NO;
-  LL_GPIO_Init(GPIOB, &GPIO_InitStruct);
-
 /* USER CODE BEGIN MX_GPIO_Init_2 */
-	LL_GPIO_SetOutputPin(GPIOB, LL_GPIO_PIN_5);
 /* USER CODE END MX_GPIO_Init_2 */
 }
 
@@ -333,39 +323,45 @@ void delay_ms(uint32_t timeDelay)
 void SPI2_TransmitByte(uint8_t data)
 {
     // Keo chan NSS xuong de bat dau qua trinh truyen
-    LL_GPIO_ResetOutputPin(GPIOB, LL_GPIO_PIN_12); // NSS là chân PB12
+    //LL_GPIO_ResetOutputPin(GPIOB, LL_GPIO_PIN_12); // NSS la chan PB12
     
     // Doi cho den khi TX buffer trong (TXE flag duoc set)
     while (!LL_SPI_IsActiveFlag_TXE(SPI2));
-
+		
+	  sentData = data;
     // Gui 1 byte du lieu
     LL_SPI_TransmitData8(SPI2, data);
 
     // Doi cho den khi byte duoc truyen xong (BSY flag duoc reset)
     while (LL_SPI_IsActiveFlag_BSY(SPI2));
 	
+		//while (!LL_SPI_IsActiveFlag_RXNE(SPI2));
+		//dummyRead = LL_SPI_ReceiveData8(SPI2);
+	
     // Keo chan NSS len de ket thuc qua trinh truyen
-    LL_GPIO_SetOutputPin(GPIOB, LL_GPIO_PIN_12);  // NSS là chân PB12
+    //LL_GPIO_SetOutputPin(GPIOB, LL_GPIO_PIN_12);  // NSS là chân PB12
 }
 
 
 uint8_t SPI2_ReceiveByte(void)
 {
     uint8_t receivedDataTemp = 0x00u;
-
-	// Keo chan NSS xuong de bat dau qua trinh truyen
-    LL_GPIO_ResetOutputPin(GPIOB, LL_GPIO_PIN_12);  // NSS la chan PB12
+	
+	  // Keo chan NSS xuong de bat dau qua trinh truyen
+    //LL_GPIO_ResetOutputPin(GPIOB, LL_GPIO_PIN_12);  // NSS la chan PB12
 
     // Doi cho den khi co du lieu nhan duoc (RXNE flag duoc set)
     while (!LL_SPI_IsActiveFlag_RXNE(SPI2));
 
     // Doc du lieu nhan duoc tu SPI
     receivedDataTemp = LL_SPI_ReceiveData8(SPI2);
+	
+		while (LL_SPI_IsActiveFlag_BSY(SPI2));
 
     // Keo chan NSS len de ket thuc qua trinh nhan
-    LL_GPIO_SetOutputPin(GPIOB, LL_GPIO_PIN_12);  // NSS là chân PB12
-	
-	return receivedDataTemp; 
+    //LL_GPIO_SetOutputPin(GPIOB, LL_GPIO_PIN_12);  // NSS là chân PB12
+		
+		return receivedDataTemp; 
 }
 /* USER CODE END 4 */
 

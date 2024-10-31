@@ -529,7 +529,7 @@ static void MX_SPI2_Init(void)
   PC2   ------> SPI2_MISO
   PC3   ------> SPI2_MOSI
   PB10   ------> SPI2_SCK
-  PB12  ------> SPI2_NSS
+  PB12   ------> SPI2_NSS
   */
   GPIO_InitStruct.Pin = LL_GPIO_PIN_2|LL_GPIO_PIN_3;
   GPIO_InitStruct.Mode = LL_GPIO_MODE_ALTERNATE;
@@ -539,16 +539,7 @@ static void MX_SPI2_Init(void)
   GPIO_InitStruct.Alternate = LL_GPIO_AF_5;
   LL_GPIO_Init(GPIOC, &GPIO_InitStruct);
 
-  GPIO_InitStruct.Pin = LL_GPIO_PIN_10;
-  GPIO_InitStruct.Mode = LL_GPIO_MODE_ALTERNATE;
-  GPIO_InitStruct.Speed = LL_GPIO_SPEED_FREQ_VERY_HIGH;
-  GPIO_InitStruct.OutputType = LL_GPIO_OUTPUT_PUSHPULL;
-  GPIO_InitStruct.Pull = LL_GPIO_PULL_NO;
-  GPIO_InitStruct.Alternate = LL_GPIO_AF_5;
-  LL_GPIO_Init(GPIOB, &GPIO_InitStruct);
-	
-	// NSS
-  GPIO_InitStruct.Pin = LL_GPIO_PIN_12;
+  GPIO_InitStruct.Pin = LL_GPIO_PIN_10|LL_GPIO_PIN_12;
   GPIO_InitStruct.Mode = LL_GPIO_MODE_ALTERNATE;
   GPIO_InitStruct.Speed = LL_GPIO_SPEED_FREQ_VERY_HIGH;
   GPIO_InitStruct.OutputType = LL_GPIO_OUTPUT_PUSHPULL;
@@ -565,17 +556,16 @@ static void MX_SPI2_Init(void)
   SPI_InitStruct.DataWidth = LL_SPI_DATAWIDTH_8BIT;
   SPI_InitStruct.ClockPolarity = LL_SPI_POLARITY_LOW;
   SPI_InitStruct.ClockPhase = LL_SPI_PHASE_1EDGE;
-  SPI_InitStruct.NSS = LL_SPI_NSS_SOFT;
+  SPI_InitStruct.NSS = LL_SPI_NSS_HARD_OUTPUT;
   SPI_InitStruct.BaudRate = LL_SPI_BAUDRATEPRESCALER_DIV32;
   SPI_InitStruct.BitOrder = LL_SPI_MSB_FIRST;
   SPI_InitStruct.CRCCalculation = LL_SPI_CRCCALCULATION_DISABLE;
-  SPI_InitStruct.CRCPoly = 0;
+  SPI_InitStruct.CRCPoly = 7;
   LL_SPI_Init(SPI2, &SPI_InitStruct);
   LL_SPI_SetStandard(SPI2, LL_SPI_PROTOCOL_MOTOROLA);
-  LL_SPI_DisableNSSPulseMgt(SPI2);
+  LL_SPI_EnableNSSPulseMgt(SPI2);
   /* USER CODE BEGIN SPI2_Init 2 */
-	LL_GPIO_SetOutputPin(GPIOB, LL_GPIO_PIN_12);
-	LL_SPI_Enable(SPI2);
+	
   /* USER CODE END SPI2_Init 2 */
 
 }
@@ -590,56 +580,47 @@ Thêm vào đó, chúng ta cần khai báo cấu hình cho SPI2, cụ thể:
 - ```LL_SPI_MODE_MASTER```: Ở đây, STM32L476 sẽ được dùng như 1 Master.
 - ```LL_SPI_DATAWIDTH_8BIT```: Dữ liệu được đọc và ghi 8 bit, tức 1 byte 1 lần
 - ```LL_SPI_POLARITY_LOW``` và ```LL_SPI_PHASE_1EDGE```: chúng ta sử dụng SPI Mode 1 (CPOL = 0, CPHA = 1)
-- ```LL_SPI_NSS_SOFT```: CS sẽ được set thủ công bởi người dùng
+- ```LL_SPI_NSS_HARD_OUTPUT```: CS sẽ được reset tự động bởi phần cứng khi ```LL_SPI_Enable(SPI2)``` được gọi và được set khi ```LL_SPI_Disable(SPI)``` được gọi
 - ```LL_SPI_BAUDRATEPRESCALER_DIV32```: Tốc độ baud trong giao tiếp SPI xác định tốc độ truyền dữ liệu giữa master và slave.
 $${4MHz \over 32}=125kHz$$
 - ```LL_SPI_MSB_FIRST```: Khi truyền nhận dữ liệu, MSB sẽ được xử lí trước.
 - ```LL_SPI_CRCCALCULATION_DISABLE```: Chúng ta không sử dụng CRC
 - ```LL_SPI_SetStandard(SPI2, LL_SPI_PROTOCOL_MOTOROLA)```: Sử dụng protocol mặc định của Motorola
-- ```LL_SPI_DisableNSSPulseMgt(SPI2)```: Không dùng NSS Pulse
+- ```LL_SPI_EnableNSSPulseMgt(SPI2)```: Khi hàm này được gọi, nó sẽ cho phép vi điều khiển tự động hạ tín hiệu NSS xuống mức thấp (logic 0) trước khi bắt đầu truyền dữ liệu và nâng tín hiệu NSS lên mức cao (logic 1) sau khi truyền dữ liệu hoàn tất. Điều này giúp đảm bảo rằng thiết bị ngoại vi được chọn trong suốt quá trình truyền dữ liệu.
 
 Hàm truyền dữ liệu từ master sang slave sẽ được thực hiện như sau:
 ```c
 /* Gui 1 byte du lieu tu Master cho Slave */
 void SPI2_TransmitByte(uint8_t data)
 {
-    // Keo chan NSS xuong de bat dau qua trinh truyen
-    LL_GPIO_ResetOutputPin(GPIOB, LL_GPIO_PIN_12); // NSS là chân PB12
-    
     // Doi cho den khi TX buffer trong (TXE flag duoc set)
     while (!LL_SPI_IsActiveFlag_TXE(SPI2));
-
+		
+	  sentData = data;
     // Gui 1 byte du lieu
     LL_SPI_TransmitData8(SPI2, data);
 
     // Doi cho den khi byte duoc truyen xong (BSY flag duoc reset)
-    while (LL_SPI_IsActiveFlag_BSY(SPI2));
-	
-    // Keo chan NSS len de ket thuc qua trinh truyen
-    LL_GPIO_SetOutputPin(GPIOB, LL_GPIO_PIN_12);  // NSS là chân PB12
+    while (LL_SPI_IsActiveFlag_BSY(SPI2));	
 }
 ```
 
 
-Hàm truyền dữ liệu từ slave sẽ được thực hiện như sau:
+Hàm nhận dữ liệu từ slave sẽ được thực hiện như sau:
 ```c
 /* Nhan 1 byte du lieu tu Slave */
 uint8_t SPI2_ReceiveByte(void)
 {
     uint8_t receivedDataTemp = 0x00u;
-
-	// Keo chan NSS xuong de bat dau qua trinh truyen
-    LL_GPIO_ResetOutputPin(GPIOB, LL_GPIO_PIN_12);  // NSS la chan PB12
-
+	
     // Doi cho den khi co du lieu nhan duoc (RXNE flag duoc set)
     while (!LL_SPI_IsActiveFlag_RXNE(SPI2));
 
     // Doc du lieu nhan duoc tu SPI
     receivedDataTemp = LL_SPI_ReceiveData8(SPI2);
-
-    // Keo chan NSS len de ket thuc qua trinh nhan
-    LL_GPIO_SetOutputPin(GPIOB, LL_GPIO_PIN_12);  // NSS là chân PB12
 	
+	while (LL_SPI_IsActiveFlag_BSY(SPI2));
+		
 	return receivedDataTemp; 
 }
 ```
@@ -647,30 +628,122 @@ uint8_t SPI2_ReceiveByte(void)
 - RXNE: Cờ báo nhận, cờ này set lên 1 khi nhận xong data.
 - BSY: Cờ báo bận, set lên 1 khi SPI đang bận truyền nhận.
 
+Hàm main trên Master:
+```c
+while (1)
+  {
+    /* USER CODE END WHILE */
+
+    /* USER CODE BEGIN 3 */
+		counterReceive = 0;
+		counterSend = 0;
+		receivedData = 0;
+		dummyRead = 0;
+		delay_ms(2000);
+		LL_SPI_Enable(SPI2);
+		for (uint8_t i = 0; i < ARRAY_SIZE; i++) 
+		{
+			delay_ms(1000);
+			SPI2_TransmitByte(dataTrans[i]);
+			counterSend++;
+		}
+		LL_SPI_Disable(SPI2);
+		delay_ms(3000);
+		// Command de nhan data tu slave
+		
+		LL_SPI_Enable(SPI2);
+		while (counterReceive < ARRAY_SIZE)
+		{
+			SPI2_TransmitByte(0xFF);
+			if (receivedData != 0xFF)
+			{
+				receivedData = SPI2_ReceiveByte();
+				counterReceive++;
+			}
+			delay_ms(1000);
+		}
+		LL_SPI_Disable(SPI2);
+		
+  }
+```
+
 #### SPI Software trên STM32F446 (Slave)
-Tương tự như trên Master, trên Slave, SPI2 cũng được sử dụng với các chân GPIO giống như với Master, tuý nhiên hàm truyền nhận sẽ có sự khác biệt. \
+Tương tự như trên Master, trên Slave, SPI2 cũng được sử dụng với các chân GPIO tượng tự như với Master, tuy nhiên cần khai báo trong hàm Init để MCU biết nó là thiết bị Slave \
+```c
+static void MX_SPI2_Init(void)
+{
+
+  /* USER CODE BEGIN SPI2_Init 0 */
+
+  /* USER CODE END SPI2_Init 0 */
+
+  LL_SPI_InitTypeDef SPI_InitStruct = {0};
+
+  LL_GPIO_InitTypeDef GPIO_InitStruct = {0};
+
+  /* Peripheral clock enable */
+  LL_APB1_GRP1_EnableClock(LL_APB1_GRP1_PERIPH_SPI2);
+
+  LL_AHB1_GRP1_EnableClock(LL_AHB1_GRP1_PERIPH_GPIOC);
+  LL_AHB1_GRP1_EnableClock(LL_AHB1_GRP1_PERIPH_GPIOB);
+  /**SPI2 GPIO Configuration
+  PC2   ------> SPI2_MISO
+  PC3   ------> SPI2_MOSI
+  PB10   ------> SPI2_SCK
+  PB12   ------> SPI2_NSS
+  */
+  GPIO_InitStruct.Pin = LL_GPIO_PIN_2|LL_GPIO_PIN_3;
+  GPIO_InitStruct.Mode = LL_GPIO_MODE_ALTERNATE;
+  GPIO_InitStruct.Speed = LL_GPIO_SPEED_FREQ_VERY_HIGH;
+  GPIO_InitStruct.OutputType = LL_GPIO_OUTPUT_PUSHPULL;
+  GPIO_InitStruct.Pull = LL_GPIO_PULL_NO;
+  GPIO_InitStruct.Alternate = LL_GPIO_AF_5;
+  LL_GPIO_Init(GPIOC, &GPIO_InitStruct);
+
+  GPIO_InitStruct.Pin = LL_GPIO_PIN_10|LL_GPIO_PIN_12;
+  GPIO_InitStruct.Mode = LL_GPIO_MODE_ALTERNATE;
+  GPIO_InitStruct.Speed = LL_GPIO_SPEED_FREQ_VERY_HIGH;
+  GPIO_InitStruct.OutputType = LL_GPIO_OUTPUT_PUSHPULL;
+  GPIO_InitStruct.Pull = LL_GPIO_PULL_NO;
+  GPIO_InitStruct.Alternate = LL_GPIO_AF_5;
+  LL_GPIO_Init(GPIOB, &GPIO_InitStruct);
+
+  /* USER CODE BEGIN SPI2_Init 1 */
+
+  /* USER CODE END SPI2_Init 1 */
+  /* SPI2 parameter configuration*/
+  SPI_InitStruct.TransferDirection = LL_SPI_FULL_DUPLEX;
+  SPI_InitStruct.Mode = LL_SPI_MODE_SLAVE;
+  SPI_InitStruct.DataWidth = LL_SPI_DATAWIDTH_8BIT;
+  SPI_InitStruct.ClockPolarity = LL_SPI_POLARITY_LOW;
+  SPI_InitStruct.ClockPhase = LL_SPI_PHASE_1EDGE;
+  SPI_InitStruct.NSS = LL_SPI_NSS_HARD_INPUT;
+  SPI_InitStruct.BitOrder = LL_SPI_MSB_FIRST;
+  SPI_InitStruct.CRCCalculation = LL_SPI_CRCCALCULATION_DISABLE;
+  SPI_InitStruct.CRCPoly = 10;
+  LL_SPI_Init(SPI2, &SPI_InitStruct);
+  LL_SPI_SetStandard(SPI2, LL_SPI_PROTOCOL_MOTOROLA);
+  /* USER CODE BEGIN SPI2_Init 2 */
+	
+  /* USER CODE END SPI2_Init 2 */
+
+}
+```
+Lưu ý, ```LL_SPI_NSS_HARD_INPUT``` phải được cấu hình cho ```SPI_InitStruct.NSS``` để Slave nhận tín hiệu NSS từ Master khi cần giao tiếp. \
 Chân PB12 sẽ được kiểm tra để xem có tin hiệu muốn bắt đầu quá trình truyện nhận từ Master hay không, nếu không thì Slave sẽ không làm gì cả và chỉ ngồi đợi. \
 ```c
 /* Gui du lieu tu Slave sang Master */
 void SPI_SendData(uint8_t data) 
-{
-	while (LL_GPIO_IsInputPinSet(GPIOB, LL_GPIO_PIN_12));
-
-	// Doi cho TXE (Transmit Data Register Empty)
-	while (!LL_SPI_IsActiveFlag_TXE(SPI2));
-
-	// Gui du lieu
-	LL_SPI_TransmitData8(SPI2, data);
-
-	// Doi cho BSY (Busy flag) tra ve 0
-	while (LL_SPI_IsActiveFlag_BSY(SPI2));
+{	
+  // Doi cho TXE (Transmit Data Register Empty)
+  while (!LL_SPI_IsActiveFlag_TXE(SPI2));
 	
-	// Doi cho den khi co du lieu nhan (RXNE flag du?c set)
-	// while (!LL_SPI_IsActiveFlag_RXNE(SPI2));
+  sentData = data;
+  // Gui du lieu
+  LL_SPI_TransmitData8(SPI2, data);
 
-    (void)LL_SPI_ReceiveData8(SPI2);
-	
-	while (!LL_GPIO_IsInputPinSet(GPIOB, LL_GPIO_PIN_12));
+  // Doi cho BSY (Busy flag) tra ve 0
+  while (LL_SPI_IsActiveFlag_BSY(SPI2));
 }
 ```
 
@@ -678,23 +751,50 @@ void SPI_SendData(uint8_t data)
 /* Doc du lieu tu Master */
 uint8_t SPI_ReceiveData(void) 
 {
-	uint8_t receivedData = 0;
-	
-	while (LL_GPIO_IsInputPinSet(GPIOB, LL_GPIO_PIN_12));
-	//while (LL_SPI_IsActiveFlag_BSY(SPI2));
-	
-	// Doi cho RXNE (Receive Data Register Not Empty)
-	while (!LL_SPI_IsActiveFlag_RXNE(SPI2));
-	
-	receivedData = LL_SPI_ReceiveData8(SPI2);
-	
-	// G?i m?t dummy byte (0xFF) d? làm m?i b? d?m TX
-	// while (!LL_SPI_IsActiveFlag_TXE(SPI2));
-    // LL_SPI_TransmitData8(SPI2, 0xFF);
-	
-	while (!LL_GPIO_IsInputPinSet(GPIOB, LL_GPIO_PIN_12));
+  uint8_t receivedData = 0;
 
-	// Doc du lieu nhan duoc
-	return receivedData;
+  // Doi cho RXNE (Receive Data Register Not Empty)
+  while (!LL_SPI_IsActiveFlag_RXNE(SPI2));
+	
+  receivedData = LL_SPI_ReceiveData8(SPI2);
+	
+  while (LL_SPI_IsActiveFlag_BSY(SPI2));
+
+  // Doc du lieu nhan duoc
+  return receivedData;
 }
+```
+
+Hàm main trên Slave:
+```c
+  while (1)
+  {
+    /* USER CODE END WHILE */
+
+    /* USER CODE BEGIN 3 */
+		counterReceive = 0;
+		counterSend = 0;
+		receivedData = 0;
+		
+		while (LL_GPIO_IsInputPinSet(GPIOB, LL_GPIO_PIN_12));
+		for (int i = 0; i< ARRAY_SIZE; i++)
+		{
+			receivedData = SPI_ReceiveData();
+			counterReceive++;
+		}
+		while (!LL_GPIO_IsInputPinSet(GPIOB, LL_GPIO_PIN_12));
+		receivedData = 0;
+		while (LL_GPIO_IsInputPinSet(GPIOB, LL_GPIO_PIN_12))
+			;
+		while (counterSend < ARRAY_SIZE) 
+		{
+			SPI_SendData(dataTrans[counterSend]);
+			counterSend++;
+			dummyRead = SPI_ReceiveData();
+			(void)dummyRead;
+		}
+				
+		while (!LL_GPIO_IsInputPinSet(GPIOB, LL_GPIO_PIN_12));
+		
+  }
 ```

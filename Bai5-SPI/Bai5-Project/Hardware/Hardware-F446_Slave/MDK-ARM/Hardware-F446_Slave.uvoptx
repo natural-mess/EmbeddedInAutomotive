@@ -152,18 +152,18 @@
         <Bp>
           <Number>0</Number>
           <Type>0</Type>
-          <LineNumber>0</LineNumber>
+          <LineNumber>225</LineNumber>
           <EnabledFlag>1</EnabledFlag>
-          <Address>66</Address>
+          <Address>10</Address>
           <ByteObject>0</ByteObject>
           <HtxType>0</HtxType>
           <ManyObjects>0</ManyObjects>
           <SizeOfObject>0</SizeOfObject>
           <BreakByAccess>0</BreakByAccess>
           <BreakIfRCount>1</BreakIfRCount>
-          <Filename></Filename>
+          <Filename>../Src/system_stm32f4xx.c</Filename>
           <ExecCommand></ExecCommand>
-          <Expression>0x00000042</Expression>
+          <Expression>\\Hardware_F446_Slave\../Src/system_stm32f4xx.c\225</Expression>
         </Bp>
       </Breakpoint>
       <WatchWindow1>
@@ -181,6 +181,16 @@
           <count>2</count>
           <WinNumber>1</WinNumber>
           <ItemText>counterSend</ItemText>
+        </Ww>
+        <Ww>
+          <count>3</count>
+          <WinNumber>1</WinNumber>
+          <ItemText>sentData</ItemText>
+        </Ww>
+        <Ww>
+          <count>4</count>
+          <WinNumber>1</WinNumber>
+          <ItemText>dummyRead</ItemText>
         </Ww>
       </WatchWindow1>
       <Tracepoint>
