@@ -2,7 +2,7 @@
 
 ### 1. I2C Software
 Bài này sử dụng STM32L476 để giao tiếp với LCD 16x2 thông qua giao tiếp I2C. Sơ đồ chân kết nối giữa MCU và LCD như sau:
-```c
+```
 STM32L476                LCD 16x2 (I2C Module)
 +-------------+          +-----------------+
 |             |          |                 |
@@ -212,4 +212,65 @@ uint8_t I2C_ReadByte(uint8_t ack)
     return receivedByte;
 }
 ```
-### 1. I2C Hardware
+### 2. I2C Hardware
+Với I2C Hardware, ta chỉ cần khai báo các phần tử trong struct ```LL_I2C_InitTypeDef``` để kích hoạt I2C trong phần cứng của MCU. Dựa theo Reference Manual của STM32L476, chân PB6 và PB7 được nối lần lượt với I2C1_SCL và I2C1_SDA, do đó ta cần khai báo clock cho AHB2 để sử dụng GPIOB và cấu hình ```LL_GPIO_InitTypeDef``` để sử dụng 2 chân này.
+```c
+  LL_AHB2_GRP1_EnableClock(LL_AHB2_GRP1_PERIPH_GPIOB);
+  /**I2C1 GPIO Configuration
+  PB6   ------> I2C1_SCL
+  PB7   ------> I2C1_SDA
+  */
+  GPIO_InitStruct.Pin = LL_GPIO_PIN_6|LL_GPIO_PIN_7;
+  GPIO_InitStruct.Mode = LL_GPIO_MODE_ALTERNATE;
+  GPIO_InitStruct.Speed = LL_GPIO_SPEED_FREQ_VERY_HIGH;
+  GPIO_InitStruct.OutputType = LL_GPIO_OUTPUT_OPENDRAIN;
+  GPIO_InitStruct.Pull = LL_GPIO_PULL_NO;
+  GPIO_InitStruct.Alternate = LL_GPIO_AF_4;
+  LL_GPIO_Init(GPIOB, &GPIO_InitStruct);
+```
+Trong đó:
+- ```GPIO_InitStruct.Mode = LL_GPIO_MODE_ALTERNATE;```: có nghĩa là các chân này sẽ hoạt động ở chế độ chức năng thay thế (alternate function), cho phép chúng thực hiện các chức năng khác ngoài việc chỉ là đầu vào hoặc đầu ra thông thường.
+- ```GPIO_InitStruct.Speed = LL_GPIO_SPEED_FREQ_VERY_HIGH;```: cho phép các tín hiệu trên chân GPIO được truyền tải với tốc độ rất cao, điều này là cần thiết cho giao thức I2C.
+- ```GPIO_InitStruct.OutputType = LL_GPIO_OUTPUT_OPENDRAIN;```: có nghĩa là chân GPIO sẽ hoạt động như một đầu ra mở (open-drain). Điều này là cần thiết cho giao thức I2C, vì nó cho phép nhiều thiết bị kết nối trên cùng một dây dữ liệu mà không gây ra xung đột. Giao thức I2C cho phép nhiều thiết bị kết nối trên cùng một bus dữ liệu. Khi một thiết bị muốn gửi dữ liệu, nó có thể kéo dây dữ liệu (SDA) xuống mức thấp (logic 0). Tuy nhiên, khi không có thiết bị nào đang gửi dữ liệu, dây dữ liệu cần phải được kéo lên mức cao (logic 1). Chế độ open-drain cho phép nhiều thiết bị cùng chia sẻ một dây mà không gây ra xung đột, vì chỉ có một thiết bị có thể kéo dây xuống mức thấp tại một thời điểm.
+- ```GPIO_InitStruct.Alternate = LL_GPIO_AF_4;```: chỉ định chức năng thay thế cho các chân GPIO. LL_GPIO_AF_4 tương ứng với chức năng I2C1 cho các chân PB6 và PB7.
+
+```c
+  /* Peripheral clock enable */
+  LL_APB1_GRP1_EnableClock(LL_APB1_GRP1_PERIPH_I2C1);
+
+  /* USER CODE BEGIN I2C1_Init 1 */
+
+  /* USER CODE END I2C1_Init 1 */
+
+  /** I2C Initialization
+  */
+  LL_I2C_DisableAutoEndMode(I2C1);
+  LL_I2C_DisableOwnAddress2(I2C1);
+  LL_I2C_DisableGeneralCall(I2C1);
+  LL_I2C_EnableClockStretching(I2C1);
+  I2C_InitStruct.PeripheralMode = LL_I2C_MODE_I2C;
+  I2C_InitStruct.Timing = 0x00100D14;
+  I2C_InitStruct.AnalogFilter = LL_I2C_ANALOGFILTER_ENABLE;
+  I2C_InitStruct.DigitalFilter = 0;
+  I2C_InitStruct.OwnAddress1 = 0;
+  I2C_InitStruct.TypeAcknowledge = LL_I2C_ACK;
+  I2C_InitStruct.OwnAddrSize = LL_I2C_OWNADDRESS1_7BIT;
+  LL_I2C_Init(I2C1, &I2C_InitStruct);
+  LL_I2C_SetOwnAddress2(I2C1, 0, LL_I2C_OWNADDRESS2_NOMASK);
+  /* USER CODE BEGIN I2C1_Init 2 */
+  LL_I2C_Enable(I2C1);
+  /* USER CODE END I2C1_Init 2 */
+```
+Sau khi cấu hình xong GPIOB, ta cần khởi tạo I2C để sử dụng I2C trong hardware của MCU.
+- ```LL_APB1_GRP1_EnableClock(LL_APB1_GRP1_PERIPH_I2C1);```: kích hoạt clock cho I2C1
+- ```LL_I2C_DisableAutoEndMode(I2C1);```: Tắt chế độ tự động kết thúc. Khi chế độ này được bật, I2C sẽ tự động gửi tín hiệu dừng (STOP) sau khi hoàn thành truyền dữ liệu. Tắt chế độ này cho phép chúng ta kiểm soát tốt hơn quá trình truyền.
+- ```LL_I2C_DisableOwnAddress2(I2C1);```: Tắt OwnAddress2 của I2C. Địa chỉ này thường được sử dụng cho các thiết bị có thể nhận nhiều địa chỉ. Nếu không cần thiết, ta có thể tắt nó.
+- ```LL_I2C_DisableGeneralCall(I2C1);```: Tắt chế độ General Call. Chế độ này cho phép một thiết bị gửi tín hiệu đến tất cả các thiết bị trên bus I2C. Nếu không cần thiết, ta có thể tắt nó.
+- ```LL_I2C_EnableClockStretching(I2C1);```: Bật chế độ kéo dài xung nhịp (Clock Stretching). Chế độ này cho phép thiết bị nhận (slave) kéo dài xung nhịp để có thêm thời gian xử lý dữ liệu. Điều này rất hữu ích khi thiết bị nhận cần thêm thời gian để xử lý.
+- ```I2C_InitStruct.PeripheralMode = LL_I2C_MODE_I2C;```: Chỉ định chế độ hoạt động của I2C. Ở đây, chế độ được đặt là ```LL_I2C_MODE_I2C```, nghĩa là I2C sẽ hoạt động theo giao thức I2C tiêu chuẩn.
+- ```I2C_InitStruct.Timing = 0x00100D14;```: Tham số này cấu hình thời gian cho I2C. Giá trị 0x00100D14 là một giá trị cụ thể cho tốc độ truyền và thời gian trễ giữa các xung nhịp. Giá trị này cần được tính toán dựa trên tần số clock hệ thống và yêu cầu của ứng dụng.
+- ```I2C_InitStruct.AnalogFilter = LL_I2C_ANALOGFILTER_ENABLE;```: Bật bộ lọc tương tự (analog filter). Bộ lọc này giúp loại bỏ nhiễu từ tín hiệu I2C.
+- ```I2C_InitStruct.DigitalFilter = 0;```: Cấu hình bộ lọc số (digital filter). Ở đây, giá trị được đặt là 0, có nghĩa là không sử dụng bộ lọc số.
+- ```I2C_InitStruct.OwnAddress1 = 0;```: Địa chỉ của thiết bị I2C.
+- ```I2C_InitStruct.TypeAcknowledge = LL_I2C_ACK;```: Chỉ định kiểu xác nhận. Ở đây, nó được đặt là ```LL_I2C_ACK```, có nghĩa là thiết bị sẽ gửi tín hiệu xác nhận (ACK) khi nhận dữ liệu.
+- ```I2C_InitStruct.OwnAddrSize = LL_I2C_OWNADDRESS1_7BIT;```:  Kích thước địa chỉ của thiết bị. Ở đây, nó được đặt là ```LL_I2C_OWNADDRESS1_7BIT```, có nghĩa là địa chỉ sẽ được sử dụng là địa chỉ 7 bit.
