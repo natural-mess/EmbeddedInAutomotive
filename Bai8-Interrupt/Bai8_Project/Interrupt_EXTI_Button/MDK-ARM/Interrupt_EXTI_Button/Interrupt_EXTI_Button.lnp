@@ -1,0 +1,13 @@
+--cpu=Cortex-M4.fp.sp --branchpatch=sdcomp-29491-629360
+"interrupt_exti_button\startup_stm32l476xx.o"
+"interrupt_exti_button\main.o"
+"interrupt_exti_button\stm32l4xx_it.o"
+"interrupt_exti_button\stm32l4xx_ll_utils.o"
+"interrupt_exti_button\stm32l4xx_ll_exti.o"
+"interrupt_exti_button\stm32l4xx_ll_gpio.o"
+"interrupt_exti_button\stm32l4xx_ll_pwr.o"
+"interrupt_exti_button\system_stm32l4xx.o"
+--strict --scatter "Interrupt_EXTI_Button\Interrupt_EXTI_Button.sct"
+--summary_stderr --info summarysizes --map --load_addr_map_info --xref --callgraph --symbols
+--info sizes --info totals --info unused --info veneers
+--list "Interrupt_EXTI_Button.map" -o Interrupt_EXTI_Button\Interrupt_EXTI_Button.axf

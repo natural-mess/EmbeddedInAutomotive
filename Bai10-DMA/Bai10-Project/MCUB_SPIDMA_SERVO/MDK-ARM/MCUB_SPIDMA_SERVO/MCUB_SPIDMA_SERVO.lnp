@@ -1,0 +1,16 @@
+--cpu=Cortex-M4.fp.sp
+"mcub_spidma_servo\startup_stm32f446xx.o"
+"mcub_spidma_servo\main.o"
+"mcub_spidma_servo\stm32f4xx_it.o"
+"mcub_spidma_servo\stm32f4xx_ll_gpio.o"
+"mcub_spidma_servo\stm32f4xx_ll_dma.o"
+"mcub_spidma_servo\stm32f4xx_ll_spi.o"
+"mcub_spidma_servo\stm32f4xx_ll_rcc.o"
+"mcub_spidma_servo\stm32f4xx_ll_utils.o"
+"mcub_spidma_servo\stm32f4xx_ll_exti.o"
+"mcub_spidma_servo\stm32f4xx_ll_tim.o"
+"mcub_spidma_servo\system_stm32f4xx.o"
+--strict --scatter "MCUB_SPIDMA_SERVO\MCUB_SPIDMA_SERVO.sct"
+--summary_stderr --info summarysizes --map --load_addr_map_info --xref --callgraph --symbols
+--info sizes --info totals --info unused --info veneers
+--list "MCUB_SPIDMA_SERVO.map" -o MCUB_SPIDMA_SERVO\MCUB_SPIDMA_SERVO.axf

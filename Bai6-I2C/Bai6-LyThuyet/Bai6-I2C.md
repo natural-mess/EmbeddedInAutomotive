@@ -1,4 +1,4 @@
-# Bài 5 - I2C
+# Bài 6 - I2C
 
 ### 1. I2C Software
 Bài này sử dụng STM32L476 để giao tiếp với LCD 16x2 thông qua giao tiếp I2C. Sơ đồ chân kết nối giữa MCU và LCD như sau:

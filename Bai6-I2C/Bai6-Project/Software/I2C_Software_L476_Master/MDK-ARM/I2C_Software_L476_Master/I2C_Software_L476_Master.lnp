@@ -1,0 +1,15 @@
+--cpu=Cortex-M4.fp.sp --branchpatch=sdcomp-29491-629360
+"i2c_software_l476_master\startup_stm32l476xx.o"
+"i2c_software_l476_master\main.o"
+"i2c_software_l476_master\stm32l4xx_it.o"
+"i2c_software_l476_master\stm32l4xx_ll_utils.o"
+"i2c_software_l476_master\stm32l4xx_ll_exti.o"
+"i2c_software_l476_master\stm32l4xx_ll_gpio.o"
+"i2c_software_l476_master\stm32l4xx_ll_pwr.o"
+"i2c_software_l476_master\stm32l4xx_ll_tim.o"
+"i2c_software_l476_master\stm32l4xx_ll_dma.o"
+"i2c_software_l476_master\system_stm32l4xx.o"
+--strict --scatter "I2C_Software_L476_Master\I2C_Software_L476_Master.sct"
+--summary_stderr --info summarysizes --map --load_addr_map_info --xref --callgraph --symbols
+--info sizes --info totals --info unused --info veneers
+--list "I2C_Software_L476_Master.map" -o I2C_Software_L476_Master\I2C_Software_L476_Master.axf

@@ -1,0 +1,15 @@
+--cpu=Cortex-M4.fp.sp --branchpatch=sdcomp-29491-629360
+"uart_software_l476\startup_stm32l476xx.o"
+"uart_software_l476\main.o"
+"uart_software_l476\stm32l4xx_it.o"
+"uart_software_l476\stm32l4xx_ll_utils.o"
+"uart_software_l476\stm32l4xx_ll_exti.o"
+"uart_software_l476\stm32l4xx_ll_gpio.o"
+"uart_software_l476\stm32l4xx_ll_pwr.o"
+"uart_software_l476\stm32l4xx_ll_tim.o"
+"uart_software_l476\stm32l4xx_ll_dma.o"
+"uart_software_l476\system_stm32l4xx.o"
+--strict --scatter "UART_Software_L476\UART_Software_L476.sct"
+--summary_stderr --info summarysizes --map --load_addr_map_info --xref --callgraph --symbols
+--info sizes --info totals --info unused --info veneers
+--list "UART_Software_L476.map" -o UART_Software_L476\UART_Software_L476.axf

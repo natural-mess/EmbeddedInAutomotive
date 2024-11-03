@@ -1,0 +1,15 @@
+--cpu=Cortex-M4.fp.sp --branchpatch=sdcomp-29491-629360
+"interrupt_timer_led\startup_stm32l476xx.o"
+"interrupt_timer_led\main.o"
+"interrupt_timer_led\stm32l4xx_it.o"
+"interrupt_timer_led\stm32l4xx_ll_utils.o"
+"interrupt_timer_led\stm32l4xx_ll_exti.o"
+"interrupt_timer_led\stm32l4xx_ll_gpio.o"
+"interrupt_timer_led\stm32l4xx_ll_pwr.o"
+"interrupt_timer_led\stm32l4xx_ll_tim.o"
+"interrupt_timer_led\stm32l4xx_ll_dma.o"
+"interrupt_timer_led\system_stm32l4xx.o"
+--strict --scatter "Interrupt_Timer_LED\Interrupt_Timer_LED.sct"
+--summary_stderr --info summarysizes --map --load_addr_map_info --xref --callgraph --symbols
+--info sizes --info totals --info unused --info veneers
+--list "Interrupt_Timer_LED.map" -o Interrupt_Timer_LED\Interrupt_Timer_LED.axf

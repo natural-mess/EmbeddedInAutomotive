@@ -1,0 +1,16 @@
+--cpu=Cortex-M4.fp.sp --branchpatch=sdcomp-29491-629360
+"adc_potentiometer\startup_stm32l476xx.o"
+"adc_potentiometer\main.o"
+"adc_potentiometer\stm32l4xx_it.o"
+"adc_potentiometer\stm32l4xx_ll_utils.o"
+"adc_potentiometer\stm32l4xx_ll_exti.o"
+"adc_potentiometer\stm32l4xx_ll_gpio.o"
+"adc_potentiometer\stm32l4xx_ll_adc.o"
+"adc_potentiometer\stm32l4xx_ll_dma.o"
+"adc_potentiometer\stm32l4xx_ll_pwr.o"
+"adc_potentiometer\system_stm32l4xx.o"
+"adc_potentiometer\kalman.o"
+--strict --scatter "ADC_Potentiometer\ADC_Potentiometer.sct"
+--summary_stderr --info summarysizes --map --load_addr_map_info --xref --callgraph --symbols
+--info sizes --info totals --info unused --info veneers
+--list "ADC_Potentiometer.map" -o ADC_Potentiometer\ADC_Potentiometer.axf

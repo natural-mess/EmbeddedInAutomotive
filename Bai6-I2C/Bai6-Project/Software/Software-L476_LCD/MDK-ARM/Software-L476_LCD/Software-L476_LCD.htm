@@ -3,7 +3,7 @@
 <title>Static Call Graph - [Software-L476_LCD\Software-L476_LCD.axf]</title></head>
 <body><HR>
 <H1>Static Call Graph for image Software-L476_LCD\Software-L476_LCD.axf</H1><HR>
-<BR><P>#&#060CALLGRAPH&#062# ARM Linker, 6220000: Last Updated: Sun Oct 27 17:48:22 2024
+<BR><P>#&#060CALLGRAPH&#062# ARM Linker, 6220000: Last Updated: Thu Oct 31 21:12:14 2024
 <BR><P>
 <H3>Maximum Stack Usage =         68 bytes + Unknown(Functions without stacksize, Cycles, Untraceable Function Pointers)</H3><H3>
 Call chain for Maximum Stack Depth:</H3>
@@ -598,7 +598,7 @@ Global Symbols
 <LI><a href="#[68]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;main
 </UL>
 
-<P><STRONG><a name="[71]"></a>LCD_Init</STRONG> (Thumb, 2260 bytes, Stack size 8 bytes, main.o(.text.LCD_Init))
+<P><STRONG><a name="[71]"></a>LCD_Init</STRONG> (Thumb, 1256 bytes, Stack size 8 bytes, main.o(.text.LCD_Init))
 <BR><BR>[Stack]<UL><LI>Max Depth = 28<LI>Call Chain = LCD_Init &rArr; I2C_SendByte
 </UL>
 <BR>[Calls]<UL><LI><a href="#[74]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;I2C_Stop
@@ -649,7 +649,7 @@ Global Symbols
 <P><STRONG><a name="[9]"></a>SysTick_Handler</STRONG> (Thumb, 2 bytes, Stack size 0 bytes, stm32l4xx_it.o(.text.SysTick_Handler))
 <BR>[Address Reference Count : 1]<UL><LI> startup_stm32l476xx.o(RESET)
 </UL>
-<P><STRONG><a name="[75]"></a>SystemClock_Config</STRONG> (Thumb, 272 bytes, Stack size 8 bytes, main.o(.text.SystemClock_Config))
+<P><STRONG><a name="[75]"></a>SystemClock_Config</STRONG> (Thumb, 336 bytes, Stack size 8 bytes, main.o(.text.SystemClock_Config))
 <BR><BR>[Stack]<UL><LI>Max Depth = 8<LI>Call Chain = SystemClock_Config
 </UL>
 <BR>[Calls]<UL><LI><a href="#[77]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;LL_SetSystemCoreClock
@@ -668,7 +668,7 @@ Global Symbols
 </UL>
 <BR>[Address Reference Count : 1]<UL><LI> startup_stm32l476xx.o(RESET)
 </UL>
-<P><STRONG><a name="[68]"></a>main</STRONG> (Thumb, 470 bytes, Stack size 32 bytes, main.o(.text.main))
+<P><STRONG><a name="[68]"></a>main</STRONG> (Thumb, 582 bytes, Stack size 32 bytes, main.o(.text.main))
 <BR><BR>[Stack]<UL><LI>Max Depth = 68<LI>Call Chain = main &rArr; LL_GPIO_Init
 </UL>
 <BR>[Calls]<UL><LI><a href="#[74]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;I2C_Stop
