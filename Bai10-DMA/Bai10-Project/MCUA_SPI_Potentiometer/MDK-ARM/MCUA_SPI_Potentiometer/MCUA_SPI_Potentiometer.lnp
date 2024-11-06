@@ -11,6 +11,7 @@
 "mcua_spi_potentiometer\stm32l4xx_ll_pwr.o"
 "mcua_spi_potentiometer\stm32l4xx_ll_tim.o"
 "mcua_spi_potentiometer\system_stm32l4xx.o"
+"mcua_spi_potentiometer\kalman.o"
 --strict --scatter "MCUA_SPI_Potentiometer\MCUA_SPI_Potentiometer.sct"
 --summary_stderr --info summarysizes --map --load_addr_map_info --xref --callgraph --symbols
 --info sizes --info totals --info unused --info veneers

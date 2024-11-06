@@ -21,7 +21,7 @@
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
-
+#include "kalman.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -36,13 +36,17 @@
 
 /* Private macro -------------------------------------------------------------*/
 /* USER CODE BEGIN PM */
-
+#define constrain(amt,low,high) ((amt)<(low)?(low):((amt)>(high)?(high):(amt)))
 /* USER CODE END PM */
 
 /* Private variables ---------------------------------------------------------*/
 
 /* USER CODE BEGIN PV */
-
+__IO uint16_t adcValue = 0;
+__IO uint16_t adcFinal = 0;
+__IO uint16_t dataTransfer = 0;
+__IO uint16_t old_dataTransfer = 0;
+__IO uint8_t sentData = 0;;
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -53,7 +57,9 @@ static void MX_ADC1_Init(void);
 static void MX_SPI2_Init(void);
 static void MX_TIM2_Init(void);
 /* USER CODE BEGIN PFP */
-
+int map(int x, int in_min, int in_max, int out_min, int out_max);
+void delay_ms(uint32_t timeDelay);
+void SPI2_TransmitByte(uint8_t data);
 /* USER CODE END PFP */
 
 /* Private user code ---------------------------------------------------------*/
@@ -104,7 +110,14 @@ int main(void)
   MX_SPI2_Init();
   MX_TIM2_Init();
   /* USER CODE BEGIN 2 */
-
+	SimpleKalmanFilter(0.1, 0.01, 1);
+	LL_ADC_REG_StartConversion(ADC1);
+	while (!LL_ADC_IsActiveFlag_EOC(ADC1)){}
+	LL_ADC_ClearFlag_EOC(ADC1);	
+	adcValue = LL_ADC_REG_ReadConversionData12(ADC1);
+	adcFinal = (uint16_t)updateEstimate((float)adcValue);
+	dataTransfer = map(adcFinal, 0, 4095, 0, 180);
+	old_dataTransfer = dataTransfer;
   /* USER CODE END 2 */
 
   /* Infinite loop */
@@ -112,7 +125,17 @@ int main(void)
   while (1)
   {
     /* USER CODE END WHILE */
-
+		
+		while (old_dataTransfer == dataTransfer)
+		{
+			adcValue = LL_ADC_REG_ReadConversionData12(ADC1);
+			adcFinal = (uint16_t)updateEstimate((float)adcValue);
+			dataTransfer = map(adcFinal, 0, 4095, 0, 180);
+		}
+		SPI2_TransmitByte((uint8_t)dataTransfer);
+		old_dataTransfer = dataTransfer;
+		delay_ms(1);
+		
     /* USER CODE BEGIN 3 */
   }
   /* USER CODE END 3 */
@@ -255,7 +278,11 @@ static void MX_ADC1_Init(void)
   LL_ADC_SetChannelSamplingTime(ADC1, LL_ADC_CHANNEL_1, LL_ADC_SAMPLINGTIME_92CYCLES_5);
   LL_ADC_SetChannelSingleDiff(ADC1, LL_ADC_CHANNEL_1, LL_ADC_SINGLE_ENDED);
   /* USER CODE BEGIN ADC1_Init 2 */
-
+	LL_ADC_StartCalibration(ADC1, LL_ADC_SINGLE_ENDED);
+	while (LL_ADC_IsCalibrationOnGoing(ADC1) != 0){}
+	LL_ADC_Enable(ADC1);
+  while (!LL_ADC_IsEnabled(ADC1));
+	while (LL_ADC_IsActiveFlag_ADRDY(ADC1) == 0){}
   /* USER CODE END ADC1_Init 2 */
 
 }
@@ -320,7 +347,7 @@ static void MX_SPI2_Init(void)
   LL_SPI_SetStandard(SPI2, LL_SPI_PROTOCOL_MOTOROLA);
   LL_SPI_EnableNSSPulseMgt(SPI2);
   /* USER CODE BEGIN SPI2_Init 2 */
-
+	LL_SPI_Enable(SPI2);
   /* USER CODE END SPI2_Init 2 */
 
 }
@@ -355,7 +382,7 @@ static void MX_TIM2_Init(void)
   LL_TIM_SetTriggerOutput(TIM2, LL_TIM_TRGO_RESET);
   LL_TIM_DisableMasterSlaveMode(TIM2);
   /* USER CODE BEGIN TIM2_Init 2 */
-
+	LL_TIM_EnableCounter(TIM2);
   /* USER CODE END TIM2_Init 2 */
 
 }
@@ -379,7 +406,34 @@ static void MX_GPIO_Init(void)
 }
 
 /* USER CODE BEGIN 4 */
+int map(int x, int in_min, int in_max, int out_min, int out_max)
+{
+  return (x - in_min) * (out_max - out_min) / (in_max - in_min) + out_min;
+}
 
+void SPI2_TransmitByte(uint8_t data)
+{
+    // Doi cho den khi TX buffer trong (TXE flag duoc set)
+    while (!LL_SPI_IsActiveFlag_TXE(SPI2));
+		
+	  sentData = data;
+    // Gui 1 byte du lieu
+    LL_SPI_TransmitData8(SPI2, data);
+
+    // Doi cho den khi byte duoc truyen xong (BSY flag duoc reset)
+    while (LL_SPI_IsActiveFlag_BSY(SPI2));
+}
+
+void delay_ms(uint32_t timeDelay)
+{
+    for (uint32_t i = 0; i < timeDelay; i++)
+    {
+        LL_TIM_SetCounter(TIM2, 0);
+			  LL_TIM_EnableCounter(TIM2); 
+        while (!LL_TIM_IsActiveFlag_UPDATE(TIM2));
+        LL_TIM_ClearFlag_UPDATE(TIM2);
+    }
+}
 /* USER CODE END 4 */
 
 /**

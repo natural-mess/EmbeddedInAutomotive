@@ -42,7 +42,8 @@
 /* Private variables ---------------------------------------------------------*/
 
 /* USER CODE BEGIN PV */
-
+__IO uint8_t spi_rx_buffer;  // Buffer to hold received SPI data
+__IO uint16_t servo_pulse_value; // Pulse width value for PWM
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -100,7 +101,15 @@ int main(void)
   MX_SPI2_Init();
   MX_TIM2_Init();
   /* USER CODE BEGIN 2 */
-
+	LL_TIM_EnableCounter(TIM2);
+	
+	LL_TIM_CC_EnableChannel(TIM2, LL_TIM_CHANNEL_CH1);
+  LL_TIM_EnableAllOutputs(TIM2);
+	
+	LL_SPI_EnableDMAReq_RX(SPI2);
+  LL_DMA_EnableStream(DMA1, LL_DMA_STREAM_3);
+	
+	LL_TIM_OC_SetCompareCH1(TIM2, 50);
   /* USER CODE END 2 */
 
   /* Infinite loop */
@@ -108,7 +117,8 @@ int main(void)
   while (1)
   {
     /* USER CODE END WHILE */
-
+		servo_pulse_value = 50 + ((spi_rx_buffer * (250 - 50)) / 180); // Map angle to PWM pulse width
+    LL_TIM_OC_SetCompareCH1(TIM2, servo_pulse_value);
     /* USER CODE BEGIN 3 */
   }
   /* USER CODE END 3 */
@@ -200,7 +210,7 @@ static void MX_SPI2_Init(void)
 
   LL_DMA_SetStreamPriorityLevel(DMA1, LL_DMA_STREAM_3, LL_DMA_PRIORITY_HIGH);
 
-  LL_DMA_SetMode(DMA1, LL_DMA_STREAM_3, LL_DMA_MODE_NORMAL);
+  LL_DMA_SetMode(DMA1, LL_DMA_STREAM_3, LL_DMA_MODE_CIRCULAR);
 
   LL_DMA_SetPeriphIncMode(DMA1, LL_DMA_STREAM_3, LL_DMA_PERIPH_NOINCREMENT);
 
@@ -213,7 +223,11 @@ static void MX_SPI2_Init(void)
   LL_DMA_DisableFifoMode(DMA1, LL_DMA_STREAM_3);
 
   /* USER CODE BEGIN SPI2_Init 1 */
-
+	LL_DMA_SetPeriphAddress(DMA1, LL_DMA_STREAM_3, (uint32_t)&SPI2->DR);
+	
+  LL_DMA_SetMemoryAddress(DMA1, LL_DMA_STREAM_3, (uint32_t)&spi_rx_buffer);
+	
+	LL_DMA_SetDataLength(DMA1, LL_DMA_STREAM_3, 1);
   /* USER CODE END SPI2_Init 1 */
   /* SPI2 parameter configuration*/
   SPI_InitStruct.TransferDirection = LL_SPI_HALF_DUPLEX_RX;
@@ -228,7 +242,7 @@ static void MX_SPI2_Init(void)
   LL_SPI_Init(SPI2, &SPI_InitStruct);
   LL_SPI_SetStandard(SPI2, LL_SPI_PROTOCOL_MOTOROLA);
   /* USER CODE BEGIN SPI2_Init 2 */
-
+	LL_SPI_Enable(SPI2);
   /* USER CODE END SPI2_Init 2 */
 
 }

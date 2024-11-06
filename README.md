@@ -36,6 +36,6 @@ Using STM32 to learn about Automotive
 - [Bài 9 - Lý thuyết](Bai9-ADC/Bai9-LyThuyet/Bai9-ADC.md)
 - [Bài 9 - Project](Bai9-ADC/Bai9-Project/)
 
-### Bài 10 - DMA (Chua xong)
+### Bài 10 - DMA
 - [Bài 10 - Lý thuyết](Bai10-DMA/Bai10-LyThuyet/Bai10-DMA.md)
 - [Bài 10 - Project](Bai10-DMA/Bai10-Project/)

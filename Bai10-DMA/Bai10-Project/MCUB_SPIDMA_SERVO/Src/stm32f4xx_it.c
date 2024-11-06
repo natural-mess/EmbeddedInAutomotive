@@ -204,7 +204,23 @@ void SysTick_Handler(void)
 void DMA1_Stream3_IRQHandler(void)
 {
   /* USER CODE BEGIN DMA1_Stream3_IRQn 0 */
+	// Check if the transfer complete interrupt is set
+    if (LL_DMA_IsActiveFlag_TC3(DMA1))
+    {
+        // Clear the transfer complete flag
+        LL_DMA_ClearFlag_TC3(DMA1);
 
+        // Handle the received data if necessary
+        // For example, set a flag to indicate new data has been received
+    }
+
+    // Check for transfer error
+    if (LL_DMA_IsActiveFlag_TE3(DMA1))
+    {
+        // Clear the transfer error flag
+        LL_DMA_ClearFlag_TE3(DMA1);
+        // Handle the error
+    }
   /* USER CODE END DMA1_Stream3_IRQn 0 */
 
   /* USER CODE BEGIN DMA1_Stream3_IRQn 1 */
