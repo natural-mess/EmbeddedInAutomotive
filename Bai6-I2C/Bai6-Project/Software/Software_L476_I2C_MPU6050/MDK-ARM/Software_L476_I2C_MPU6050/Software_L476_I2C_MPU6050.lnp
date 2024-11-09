@@ -1,0 +1,15 @@
+--cpu=Cortex-M4.fp.sp --branchpatch=sdcomp-29491-629360
+"software_l476_i2c_mpu6050\startup_stm32l476xx.o"
+"software_l476_i2c_mpu6050\main.o"
+"software_l476_i2c_mpu6050\stm32l4xx_it.o"
+"software_l476_i2c_mpu6050\stm32l4xx_ll_utils.o"
+"software_l476_i2c_mpu6050\stm32l4xx_ll_exti.o"
+"software_l476_i2c_mpu6050\stm32l4xx_ll_gpio.o"
+"software_l476_i2c_mpu6050\stm32l4xx_ll_pwr.o"
+"software_l476_i2c_mpu6050\stm32l4xx_ll_tim.o"
+"software_l476_i2c_mpu6050\stm32l4xx_ll_dma.o"
+"software_l476_i2c_mpu6050\system_stm32l4xx.o"
+--strict --scatter "Software_L476_I2C_MPU6050\Software_L476_I2C_MPU6050.sct"
+--summary_stderr --info summarysizes --map --load_addr_map_info --xref --callgraph --symbols
+--info sizes --info totals --info unused --info veneers
+--list "Software_L476_I2C_MPU6050.map" -o Software_L476_I2C_MPU6050\Software_L476_I2C_MPU6050.axf

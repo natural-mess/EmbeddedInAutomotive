@@ -20,7 +20,7 @@ Using STM32 to learn about Automotive
 - [Bài 5 - Lý thuyết](Bai5-SPI/Bai5-LyThuyet/Bai5-SPI.md)
 - [Bài 5 - Project](Bai5-SPI/Bai5-Project/)
 
-### Bài 6 - I2C (Chua xong)
+### Bài 6 - I2C
 - [Bài 6 - Lý thuyết](Bai6-I2C/Bai6-LyThuyet/Bai6-I2C.md)
 - [Bài 6 - Project](Bai6-I2C/Bai6-Project/)
 
@@ -39,3 +39,7 @@ Using STM32 to learn about Automotive
 ### Bài 10 - DMA
 - [Bài 10 - Lý thuyết](Bai10-DMA/Bai10-LyThuyet/Bai10-DMA.md)
 - [Bài 10 - Project](Bai10-DMA/Bai10-Project/)
+
+### Bài 11 - Flash - Bootloader
+- [Bài 11 - Lý thuyết](Bai11-Flash-Bootloader/Bai11-LyThuyet/Bai11-DFlash-Bootloader.md)
+- [Bài 11 - Project](Bai11-DFlash-Bootloader/Bai11-Project/)
