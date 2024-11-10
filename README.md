@@ -24,7 +24,7 @@ Using STM32 to learn about Automotive
 - [Bài 6 - Lý thuyết](Bai6-I2C/Bai6-LyThuyet/Bai6-I2C.md)
 - [Bài 6 - Project](Bai6-I2C/Bai6-Project/)
 
-### Bài 7 - UART (Chua xong)
+### Bài 7 - UART
 - [Bài 7 - Lý thuyết](Bai7-UART/Bai7-LyThuyet/Bai7-UART.md)
 - [Bài 7 - Project](Bai7-UART/Bai7-Project/)
 

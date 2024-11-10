@@ -1,0 +1,16 @@
+--cpu=Cortex-M4.fp.sp --branchpatch=sdcomp-29491-629360
+"uart_hardware_l476_esp32\startup_stm32l476xx.o"
+"uart_hardware_l476_esp32\main.o"
+"uart_hardware_l476_esp32\stm32l4xx_it.o"
+"uart_hardware_l476_esp32\stm32l4xx_ll_utils.o"
+"uart_hardware_l476_esp32\stm32l4xx_ll_exti.o"
+"uart_hardware_l476_esp32\stm32l4xx_ll_gpio.o"
+"uart_hardware_l476_esp32\stm32l4xx_ll_pwr.o"
+"uart_hardware_l476_esp32\stm32l4xx_ll_usart.o"
+"uart_hardware_l476_esp32\stm32l4xx_ll_rcc.o"
+"uart_hardware_l476_esp32\stm32l4xx_ll_dma.o"
+"uart_hardware_l476_esp32\system_stm32l4xx.o"
+--strict --scatter "UART_Hardware_L476_ESP32\UART_Hardware_L476_ESP32.sct"
+--summary_stderr --info summarysizes --map --load_addr_map_info --xref --callgraph --symbols
+--info sizes --info totals --info unused --info veneers
+--list "UART_Hardware_L476_ESP32.map" -o UART_Hardware_L476_ESP32\UART_Hardware_L476_ESP32.axf
