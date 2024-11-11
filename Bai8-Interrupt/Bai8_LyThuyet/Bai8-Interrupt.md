@@ -218,3 +218,90 @@ Hàm ```TIM1_UP_TIM16_IRQHandler``` là hàm xử lý ngắt (Interrupt Service 
 - ```LL_TIM_ClearFlag_UPDATE(TIM1)```: Nếu cờ ngắt đang được đặt, dòng lệnh này sẽ xóa cờ ngắt. Việc xóa cờ ngắt là rất quan trọng để ngăn ngừa việc hàm xử lý ngắt này được gọi lại ngay lập tức do cùng một cờ ngắt đang hoạt động.
 
 ### 3. Ngắt truyền thông
+Trong STM32L476, ngắt UART là một cơ chế cho phép vi điều khiển phản hồi nhanh chóng khi có sự kiện xảy ra trong quá trình truyền hoặc nhận dữ liệu qua giao tiếp UART mà không cần phải liên tục kiểm tra trạng thái UART. Các ngắt UART trên STM32L476 bao gồm:
+- UART Receive Interrupt (RXNE): Kích hoạt khi có dữ liệu đến và sẵn sàng đọc từ thanh ghi nhận dữ liệu (RXNE - Receive Data Register Not Empty).
+- UART Transmit Interrupt (TXE): Kích hoạt khi thanh ghi truyền (TXE - Transmit Data Register Empty) đã sẵn sàng để truyền dữ liệu mới.
+- Transmission Complete Interrupt (TC): Kích hoạt khi quá trình truyền dữ liệu đã hoàn thành.
+- Parity Error Interrupt (PE): Kích hoạt khi phát hiện lỗi parity.
+- Overrun Error Interrupt (ORE): Kích hoạt khi bộ đệm nhận dữ liệu bị tràn.
+- Framing Error Interrupt (FE): Kích hoạt khi khung dữ liệu nhận không đúng (không tìm thấy đúng stop bit).
+- Noise Error Flag (NE): Kích hoạt khi có nhiễu trong tín hiệu nhận được.
+
+Để cấu hình UART với interrupt, ta cấu hình UART tương tự như khi giao tiếp UART thông thường, nhưng cần thêm cấu hình cho ngắt trên UART.
+
+```c
+static void MX_UART4_Init(void)
+{
+
+  /* USER CODE BEGIN UART4_Init 0 */
+
+  /* USER CODE END UART4_Init 0 */
+
+  LL_USART_InitTypeDef UART_InitStruct = {0};
+
+  LL_GPIO_InitTypeDef GPIO_InitStruct = {0};
+
+  LL_RCC_SetUARTClockSource(LL_RCC_UART4_CLKSOURCE_PCLK1);
+
+  /* Peripheral clock enable */
+  LL_APB1_GRP1_EnableClock(LL_APB1_GRP1_PERIPH_UART4);
+
+  LL_AHB2_GRP1_EnableClock(LL_AHB2_GRP1_PERIPH_GPIOA);
+  /**UART4 GPIO Configuration
+  PA0   ------> UART4_TX
+  PA1   ------> UART4_RX
+  */
+  GPIO_InitStruct.Pin = LL_GPIO_PIN_0|LL_GPIO_PIN_1;
+  GPIO_InitStruct.Mode = LL_GPIO_MODE_ALTERNATE;
+  GPIO_InitStruct.Speed = LL_GPIO_SPEED_FREQ_VERY_HIGH;
+  GPIO_InitStruct.OutputType = LL_GPIO_OUTPUT_PUSHPULL;
+  GPIO_InitStruct.Pull = LL_GPIO_PULL_NO;
+  GPIO_InitStruct.Alternate = LL_GPIO_AF_8;
+  LL_GPIO_Init(GPIOA, &GPIO_InitStruct);
+
+  /* UART4 interrupt Init */
+  NVIC_SetPriority(UART4_IRQn, NVIC_EncodePriority(NVIC_GetPriorityGrouping(),0, 0));
+  NVIC_EnableIRQ(UART4_IRQn);
+
+  /* USER CODE BEGIN UART4_Init 1 */
+
+  /* USER CODE END UART4_Init 1 */
+  UART_InitStruct.BaudRate = 115200;
+  UART_InitStruct.DataWidth = LL_USART_DATAWIDTH_8B;
+  UART_InitStruct.StopBits = LL_USART_STOPBITS_1;
+  UART_InitStruct.Parity = LL_USART_PARITY_NONE;
+  UART_InitStruct.TransferDirection = LL_USART_DIRECTION_TX_RX;
+  UART_InitStruct.HardwareFlowControl = LL_USART_HWCONTROL_NONE;
+  UART_InitStruct.OverSampling = LL_USART_OVERSAMPLING_16;
+  LL_USART_Init(UART4, &UART_InitStruct);
+  LL_USART_DisableDMADeactOnRxErr(UART4);
+  LL_USART_ConfigAsyncMode(UART4);
+  LL_USART_Enable(UART4);
+  /* USER CODE BEGIN UART4_Init 2 */
+	/* Polling USART initialisation */
+  while((!(LL_USART_IsActiveFlag_TEACK(UART4))) || (!(LL_USART_IsActiveFlag_REACK(UART4))))
+  { 
+  }
+	LL_USART_EnableIT_RXNE(UART4);
+  /* USER CODE END UART4_Init 2 */
+
+}
+```
+- ```NVIC_SetPriority(UART4_IRQn, NVIC_EncodePriority(NVIC_GetPriorityGrouping(),0, 0))```: Đặt độ ưu tiên cho ngắt UART4 ở mức cao nhất (0).
+  - NVIC_SetPriority: Hàm này đặt độ ưu tiên của một ngắt cụ thể, ở đây là ngắt của UART4 (UART4_IRQn).
+    - Tham số đầu tiên: UART4_IRQn xác định mã số ngắt của UART4 trong NVIC.
+    - Tham số thứ hai: Là mức độ ưu tiên của ngắt được mã hóa thông qua NVIC_EncodePriority.
+  - NVIC_GetPriorityGrouping(): Lấy cấu hình nhóm ưu tiên hiện tại (Priority Grouping) trong NVIC. Cấu hình này chia độ ưu tiên thành hai phần:
+	- Độ ưu tiên tiền xử lý (pre-emption priority): Xác định mức độ ưu tiên tổng quát của ngắt.	
+	- Độ ưu tiên phụ (subpriority): Xác định mức độ ưu tiên chi tiết hơn cho các ngắt cùng mức ưu tiên tiền xử lý.
+  - NVIC_EncodePriority: Mã hóa mức độ ưu tiên với các tham số đầu vào:
+	- 0 (pre-emption priority): Thiết lập độ ưu tiên tiền xử lý của ngắt UART4 là cao nhất.
+	- 0 (subpriority): Đặt độ ưu tiên phụ cũng là cao nhất.
+ 
+Như vậy, ngắt của UART4 được cấu hình ở mức độ ưu tiên cao nhất trong nhóm ngắt có cấu hình tương tự.	
+- ```NVIC_EnableIRQ(UART4_IRQn)```: Kích hoạt ngắt UART4 (UART4_IRQn) trong NVIC. Khi UART4 nhận hoặc truyền dữ liệu và đáp ứng các điều kiện kích hoạt ngắt, NVIC sẽ quản lý và điều phối ngắt này để CPU xử lý.
+
+- ```while((!(LL_USART_IsActiveFlag_TEACK(UART4))) || (!(LL_USART_IsActiveFlag_REACK(UART4))))```: Đây là một vòng lặp while chờ cho đến khi các cờ trạng thái TEACK và REACK của UART4 được thiết lập, cho biết rằng UART4 đã sẵn sàng cho truyền và nhận dữ liệu:
+  - ```LL_USART_IsActiveFlag_TEACK(UART4)```: Kiểm tra cờ TEACK (Transmit Enable Acknowledge) của UART4. Cờ này xác nhận rằng phần truyền của UART đã được kích hoạt và sẵn sàng gửi dữ liệu. Nếu giá trị trả về là 1, điều đó có nghĩa là bộ truyền đã sẵn sàng; ngược lại, 0 cho biết bộ truyền chưa sẵn sàng.
+  - ```LL_USART_IsActiveFlag_REACK(UART4)```: Kiểm tra cờ REACK (Receive Enable Acknowledge) của UART4. Cờ này xác nhận rằng phần nhận của UART đã được kích hoạt và sẵn sàng nhận dữ liệu. Nếu giá trị trả về là 1, bộ nhận đã sẵn sàng; nếu trả về 0, bộ nhận chưa sẵn sàng.
+- ```LL_USART_EnableIT_RXNE(UART4)```: Kích hoạt ngắt khi có dữ liệu nhận trong bộ đệm nhận (Receive Data Register Not Empty - RXNE) của UART4. Khi ngắt RXNE được bật, bất cứ khi nào UART4 nhận được dữ liệu mới, phần cứng sẽ kích hoạt một ngắt và nhảy vào ISR (Interrupt Service Routine) để xử lý dữ liệu nhận được.

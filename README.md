@@ -28,7 +28,7 @@ Using STM32 to learn about Automotive
 - [Bài 7 - Lý thuyết](Bai7-UART/Bai7-LyThuyet/Bai7-UART.md)
 - [Bài 7 - Project](Bai7-UART/Bai7-Project/)
 
-### Bài 8 - Interrupt (Chua xong)
+### Bài 8 - Interrupt
 - [Bài 8 - Lý thuyết](Bai8-Interrupt/Bai8-LyThuyet/Bai8-Interrupt.md)
 - [Bài 8 - Project](Bai8-Interrupt/Bai8-Project/)
 
