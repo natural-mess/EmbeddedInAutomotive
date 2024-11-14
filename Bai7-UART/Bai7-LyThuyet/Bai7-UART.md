@@ -2,7 +2,7 @@
 
 Ở bài này chúng ta sử dụng STM32L476 để giao tiếp với ESP32 thông qua UART. 
 ```
-STM32L476                MPU6050 (I2C Module)
+STM32L476                      ESP32
 +-------------------+          +----------------------+
 |                   |          |                      |
 | GPIOA0 (UART4-TX) +---------->   Pin 21 (UART-RX)   |
