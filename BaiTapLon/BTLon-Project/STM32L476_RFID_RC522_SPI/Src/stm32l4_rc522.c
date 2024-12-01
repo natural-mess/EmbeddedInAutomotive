@@ -1,7 +1,5 @@
-
-
 #include "stm32l4_rc522.h"
-#include "main.h"
+
 
 /*
  * Ten ham:Write_MFRC5200
@@ -21,6 +19,7 @@ uint8_t RC522_SPI_Transfer(uint8_t data)
 
 	while(SPI_I2S_GetFlagStatus(MFRC522_SPI, SPI_I2S_FLAG_RXNE)==RESET);
 	return SPI_I2S_ReceiveData(MFRC522_SPI);*/
+	//return LL_SPI_TransmitReceive(SPI3, data);
 	return rx_data;
 }
 

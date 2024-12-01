@@ -89,6 +89,8 @@ Các yếu tố cơ bản:
   - Dữ liệu được xuất ra tại cạnh xuống (falling edge).
   - Dữ liệu được lấy mẫu tại cạnh lên thứ hai của xung nhịp.
 
+![alt text](_assets/SPIClockPhases.jpg)
+
 ### 2. I2C
 I2C (Inter-Integrated Circuit), được phát triển bởi Philips Semiconductor, là một giao thức truyền thông nối tiếp được sử dụng để kết nối các thiết bị ngoại vi với vi điều khiển. Nó chỉ sử dụng hai dây dẫn: SDA (dữ liệu) và SCL (đồng hồ) để truyền dữ liệu giữa các thiết bị.
 

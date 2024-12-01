@@ -1,5 +1,5 @@
-#include "stm32l4xx_hal.h"
-
+//#include "stm32l4xx_hal.h"
+#include "main.h"
 
 #define	uint8_t	unsigned char
 #define	uint	unsigned int

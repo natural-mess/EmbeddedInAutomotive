@@ -1,7 +1,5 @@
-
-
 #include "stm32l4_rc522.h"
-#include "main.h"
+
 
 /*
  * Ten ham:Write_MFRC5200
@@ -21,6 +19,7 @@ uint8_t RC522_SPI_Transfer(uint8_t data)
 
 	while(SPI_I2S_GetFlagStatus(MFRC522_SPI, SPI_I2S_FLAG_RXNE)==RESET);
 	return SPI_I2S_ReceiveData(MFRC522_SPI);*/
+	//return LL_SPI_TransmitReceive(SPI3, data);
 	return rx_data;
 }
 
@@ -35,7 +34,7 @@ void Write_MFRC522(uint8_t addr, uint8_t val)
 	/* CS LOW */
 	//GPIO_ResetBits(MFRC522_CS_GPIO, MFRC522_CS_PIN);
   //HAL_GPIO_WritePin(GPIOA,GPIO_PIN_9,GPIO_PIN_RESET);
-	LL_GPIO_ResetOutputPin(GPIOD, LL_GPIO_PIN_2);
+	LL_GPIO_ResetOutputPin(MFRC522_CS_GPIO, MFRC522_CS_PIN);
 	
 	//The address is located:0XXXXXX0
 	RC522_SPI_Transfer((addr<<1)&0x7E);	
@@ -44,7 +43,7 @@ void Write_MFRC522(uint8_t addr, uint8_t val)
 	/* CS HIGH */
 	//GPIO_SetBits(MFRC522_CS_GPIO, MFRC522_CS_PIN);
 	//HAL_GPIO_WritePin(GPIOA,GPIO_PIN_9,GPIO_PIN_SET);
-	LL_GPIO_SetOutputPin(GPIOD, LL_GPIO_PIN_2);
+	LL_GPIO_SetOutputPin(MFRC522_CS_GPIO, MFRC522_CS_PIN);
 }
 
 
@@ -61,7 +60,7 @@ uint8_t Read_MFRC522(uint8_t addr)
 	/* CS LOW */
 	//GPIO_ResetBits(MFRC522_CS_GPIO, MFRC522_CS_PIN);
 	//HAL_GPIO_WritePin(GPIOA,GPIO_PIN_9,GPIO_PIN_RESET);
-	LL_GPIO_ResetOutputPin(GPIOD, LL_GPIO_PIN_2);
+	LL_GPIO_ResetOutputPin(MFRC522_CS_GPIO, MFRC522_CS_PIN);
 
 	//The address is located:1XXXXXX0
 	RC522_SPI_Transfer(((addr<<1)&0x7E) | 0x80);	
@@ -70,7 +69,7 @@ uint8_t Read_MFRC522(uint8_t addr)
 	/* CS HIGH */
 	//GPIO_SetBits(MFRC522_CS_GPIO, MFRC522_CS_PIN);
 	//HAL_GPIO_WritePin(GPIOA,GPIO_PIN_9,GPIO_PIN_SET);
-	LL_GPIO_SetOutputPin(GPIOD, LL_GPIO_PIN_2);
+	LL_GPIO_SetOutputPin(MFRC522_CS_GPIO, MFRC522_CS_PIN);
 	return val;	
 	
 }
@@ -199,8 +198,8 @@ void MFRC522_Init(void)
 	//GPIO_SetBits(MFRC522_CS_GPIO,MFRC522_CS_PIN);						// Activate the RFID reader
 	//HAL_GPIO_WritePin(GPIOA,GPIO_PIN_9,GPIO_PIN_SET);
 	//HAL_GPIO_WritePin(GPIOA,GPIO_PIN_8,GPIO_PIN_SET);
-	LL_GPIO_SetOutputPin(GPIOA, LL_GPIO_PIN_14);
-	LL_GPIO_SetOutputPin(GPIOD, LL_GPIO_PIN_2);
+	LL_GPIO_SetOutputPin(MFRC522_RST_GPIO, MFRC522_RST_PIN);
+	LL_GPIO_SetOutputPin(MFRC522_CS_GPIO, MFRC522_CS_PIN);
 	//GPIO_SetBits(MFRC522_RST_GPIO,MFRC522_RST_PIN);					// not reset
 
 		// spi config

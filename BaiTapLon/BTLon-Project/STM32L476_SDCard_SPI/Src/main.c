@@ -119,7 +119,7 @@ int main(void)
 
   FATFS* getFreeFs;
 
-  fres = f_getfree("", &free_clusters, &getFreeFs);
+  fres = f_getfree("/", &free_clusters, &getFreeFs);
   if (fres != FR_OK) {
 	myprintf("f_getfree error (%i)\r\n", fres);
 	while(1);
@@ -132,7 +132,7 @@ int main(void)
   myprintf("SD card stats:\r\n%10lu KiB total drive space.\r\n%10lu KiB available.\r\n", total_sectors / 2, free_sectors / 2);
 
   //Now let's try to open file "test.txt"
-  fres = f_open(&fil, "test.txt", FA_READ);
+  fres = f_open(&fil, "data.txt", FA_READ);
   if (fres != FR_OK) {
 	myprintf("f_open error (%i)\r\n", fres);
 	while(1);
@@ -140,16 +140,20 @@ int main(void)
   myprintf("I was able to open 'test.txt' for reading!\r\n");
 
   //Read 30 bytes from "test.txt" on the SD card
-  BYTE readBuf[30];
+  BYTE readBuf[128];
 
   //We can either use f_read OR f_gets to get data out of files
   //f_gets is a wrapper on f_read that does some string formatting for us
-  TCHAR* rres = f_gets((TCHAR*)readBuf, 30, &fil);
-  if(rres != 0) {
-	myprintf("Read string from 'test.txt' contents: %s\r\n", readBuf);
-  } else {
-	myprintf("f_gets error (%i)\r\n", fres);
-  }
+//  TCHAR* rres = f_gets((TCHAR*)readBuf, 30, &fil);
+//  if(rres != 0) {
+//	myprintf("Read string from 'test.txt' contents: %s\r\n", readBuf);
+//  } else {
+//	myprintf("f_gets error (%i)\r\n", fres);
+//  }
+	while (f_gets((TCHAR *)readBuf, sizeof(readBuf), &fil) != NULL) 
+	{
+		myprintf("Read line: %s\r\n", readBuf);
+	}
 
   //Be a tidy kiwi - don't forget to close your file!
   f_close(&fil);

@@ -1,5 +1,5 @@
-#include "stm32l4xx_hal.h"
-
+//#include "stm32l4xx_hal.h"
+#include "main.h"
 
 #define	uint8_t	unsigned char
 #define	uint	unsigned int
@@ -11,21 +11,21 @@
 //pin secimi
 /////////////////////////////////////////////////////////////////////
 
-//#define MFRC522-CS-GPIO		GPIOA
-//#define MFRC522-CS-PIN		GPIO_Pin_9
-//#define MFRC522_CS_RCC		RCC_APB2Periph_GPIO
+#define MFRC522_CS_GPIO		GPIOD
+#define MFRC522_CS_PIN		LL_GPIO_PIN_2
+#define MFRC522_CS_RCC		LL_AHB2_GRP1_PERIPH_GPIOD
 
-#define MFRC522_RST_GPIO	GPIOA
-#define MFRC522_RST_PIN		GPIO_Pin_8
-#define MFRC522_RST_RCC		RCC_APB2Periph_GPIOB	
+#define MFRC522_RST_GPIO	GPIOC
+#define MFRC522_RST_PIN		LL_GPIO_PIN_2
+#define MFRC522_RST_RCC		LL_AHB2_GRP1_PERIPH_GPIOC	
 
-#define MFRC522_SPI							SPI2
-#define MFRC522_SPI_GPIO				GPIOB					// 
-#define MFRC522_SCK_PIN					GPIO_Pin_13		// SCK
-#define MFRC522_MISO_PIN				GPIO_Pin_14		// MISO
-#define MFRC522_MOSI_PIN				GPIO_Pin_15		// MOSI
-#define MFRC522_SPI_GPIO_RCC		RCC_APB2Periph_GPIOB
-#define MFRC522_SPI_RCC					RCC_APB1Periph_SPI2
+#define MFRC522_SPI							SPI3
+#define MFRC522_SPI_GPIO				GPIOC					// 
+#define MFRC522_SCK_PIN					LL_GPIO_PIN_10		// SCK
+#define MFRC522_MISO_PIN				LL_GPIO_PIN_11		// MISO
+#define MFRC522_MOSI_PIN				LL_GPIO_PIN_12		// MOSI
+#define MFRC522_SPI_GPIO_RCC		LL_AHB2_GRP1_PERIPH_GPIOC
+#define MFRC522_SPI_RCC					LL_APB1_GRP1_PERIPH_SPI3
 
 
 // Registers the MF522
