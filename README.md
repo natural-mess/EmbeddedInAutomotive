@@ -45,7 +45,6 @@ Using STM32 to learn about Automotive
 - [Bài 11 - Project](Bai11-DFlash-Bootloader/Bai11-Project/)
 
 ### Bài tập lớn
-- [Bài tập lớn - Lý thuyết](BaiTapLon/BTLon-LyThuyet/BTLon-LyThuyet.md)
 - [Bài tập lớn - Project](BaiTapLon/BTLon-Project/)
 
 ### Bài 12 - CAN
