@@ -10,8 +10,8 @@ uint8_t RC522_SPI_Transfer(uchar data)
 {
 	uchar rx_data;
 	//HAL_SPI_TransmitReceive(HSPI_INSTANCE,&data,&rx_data,1,100);
-	//SPI3_TransmitByte(data);
-	//rx_data = SPI3_ReceiveByte();
+	SPI3_TransmitByte(data);
+	rx_data = SPI3_ReceiveByte();
 	//LL_SPI_TransmitReceive(SPI3, &data, &rx_data, 1, 100);
 
 	return rx_data;
@@ -29,6 +29,7 @@ void Write_MFRC522(uchar addr, uchar val)
 	/* CS LOW */
 	//HAL_GPIO_WritePin(MFRC522_CS_PORT,MFRC522_CS_PIN,GPIO_PIN_RESET);
 	LL_GPIO_ResetOutputPin(MFRC522_CS_PORT, MFRC522_CS_PIN);
+	LL_mDelay(1);
 
 	  // even though we are calling transfer frame once, we are really sending
 	  // two 8-bit frames smooshed together-- sending two 8 bit frames back to back
@@ -51,8 +52,8 @@ void Write_MFRC522(uchar addr, uchar val)
 	LL_SPI_TransmitData8(SPI3, val);
 	while (LL_SPI_IsActiveFlag_BSY(SPI3));
 	
-	uint8_t dummy = LL_SPI_ReceiveData8(SPI3);
-	dummy = LL_SPI_ReceiveData8(SPI3);
+	uint8_t dummy = SPI3_ReceiveByte();
+	dummy = SPI3_ReceiveByte();
 	
 	/* CS HIGH */
 	//HAL_GPIO_WritePin(MFRC522_CS_PORT,MFRC522_CS_PIN,GPIO_PIN_SET);
@@ -72,6 +73,7 @@ uchar Read_MFRC522(uchar addr)
 	/* CS LOW */
 	//HAL_GPIO_WritePin(MFRC522_CS_PORT,MFRC522_CS_PIN,GPIO_PIN_RESET);
 	LL_GPIO_ResetOutputPin(MFRC522_CS_PORT, MFRC522_CS_PIN);
+	LL_mDelay(1);
 
 	  // even though we are calling transfer frame once, we are really sending
 	  // two 8-bit frames smooshed together-- sending two 8 bit frames back to back

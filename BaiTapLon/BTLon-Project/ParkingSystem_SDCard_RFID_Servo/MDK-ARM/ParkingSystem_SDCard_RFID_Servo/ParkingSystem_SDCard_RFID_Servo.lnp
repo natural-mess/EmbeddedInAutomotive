@@ -1,7 +1,7 @@
 --cpu=Cortex-M4.fp.sp --branchpatch=sdcomp-29491-629360
 "parkingsystem_sdcard_rfid_servo\startup_stm32l476xx.o"
+"parkingsystem_sdcard_rfid_servo\user_diskio_spi.o"
 "parkingsystem_sdcard_rfid_servo\rc522.o"
-"parkingsystem_sdcard_rfid_servo\fatfs_sd.o"
 "parkingsystem_sdcard_rfid_servo\main.o"
 "parkingsystem_sdcard_rfid_servo\user_diskio.o"
 "parkingsystem_sdcard_rfid_servo\fatfs.o"

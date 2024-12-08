@@ -55,7 +55,7 @@ extern "C" {
 
 /* Exported constants --------------------------------------------------------*/
 /* USER CODE BEGIN EC */
-
+extern volatile uint8_t flag_servo; // Flag to start servo movement
 /* USER CODE END EC */
 
 /* Exported macro ------------------------------------------------------------*/
@@ -70,10 +70,13 @@ void Error_Handler(void);
 void delay_ms(uint32_t timeDelay);
 void SPI2_TransmitByte(uint8_t data);
 uint8_t SPI2_ReceiveByte(void);
+void SPI3_TransmitByte(uint8_t data);
+uint8_t SPI3_ReceiveByte(void);
 void UART_SendChar(uint8_t ch);
 uint8_t UART_ReceiveChar(void);
 void UART_SendString(char *str);
 void UART_ReceiveString(char *buffer, uint8_t maxLength);
+void myprintf(const char *fmt, ...);
 /* USER CODE END EFP */
 
 /* Private defines -----------------------------------------------------------*/

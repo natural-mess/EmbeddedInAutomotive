@@ -9,6 +9,8 @@
 "stm32l476_rfid_rc522_spi\stm32l4xx_ll_spi.o"
 "stm32l476_rfid_rc522_spi\stm32l4xx_ll_dma.o"
 "stm32l476_rfid_rc522_spi\stm32l4xx_ll_pwr.o"
+"stm32l476_rfid_rc522_spi\stm32l4xx_ll_usart.o"
+"stm32l476_rfid_rc522_spi\stm32l4xx_ll_rcc.o"
 "stm32l476_rfid_rc522_spi\system_stm32l4xx.o"
 --strict --scatter "STM32L476_RFID_RC522_SPI\STM32L476_RFID_RC522_SPI.sct"
 --summary_stderr --info summarysizes --map --load_addr_map_info --xref --callgraph --symbols

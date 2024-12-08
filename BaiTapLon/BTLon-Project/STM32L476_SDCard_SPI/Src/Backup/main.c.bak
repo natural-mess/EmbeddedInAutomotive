@@ -100,7 +100,7 @@ int main(void)
   /* USER CODE BEGIN 2 */
 	myprintf("\r\n~ SD card demo ~\r\n\r\n");
 
-  HAL_Delay(1000); //a short delay is important to let the SD card settle
+  LL_mDelay(1000); //a short delay is important to let the SD card settle
 
   //some variables for FatFs
   FATFS FatFs; 	//Fatfs handle
@@ -108,7 +108,7 @@ int main(void)
   FRESULT fres; //Result after operations
 
   //Open the file system
-  fres = f_mount(&FatFs, "/", 1); //1=mount now
+  fres = f_mount(&FatFs, "", 1); //1=mount now
   if (fres != FR_OK) {
 	myprintf("f_mount error (%i)\r\n", fres);
 	while(1);
@@ -117,9 +117,9 @@ int main(void)
   //Let's get some statistics from the SD card
   DWORD free_clusters, free_sectors, total_sectors;
 
-  FATFS* getFreeFs;
+  FATFS* getFreeFs = &FatFs;
 
-  fres = f_getfree("/", &free_clusters, &getFreeFs);
+  fres = f_getfree("", &free_clusters, &getFreeFs);
   if (fres != FR_OK) {
 	myprintf("f_getfree error (%i)\r\n", fres);
 	while(1);
@@ -180,7 +180,7 @@ int main(void)
 //  f_close(&fil);
 
   //We're done, so de-mount the drive
-  f_mount(NULL, "/", 0);
+  f_mount(NULL, "", 0);
   /* USER CODE END 2 */
 
   /* Infinite loop */
@@ -287,7 +287,7 @@ static void MX_SPI2_Init(void)
   SPI_InitStruct.ClockPolarity = LL_SPI_POLARITY_LOW;
   SPI_InitStruct.ClockPhase = LL_SPI_PHASE_1EDGE;
   SPI_InitStruct.NSS = LL_SPI_NSS_SOFT;
-  SPI_InitStruct.BaudRate = LL_SPI_BAUDRATEPRESCALER_DIV32;
+  SPI_InitStruct.BaudRate = LL_SPI_BAUDRATEPRESCALER_DIV256;
   SPI_InitStruct.BitOrder = LL_SPI_MSB_FIRST;
   SPI_InitStruct.CRCCalculation = LL_SPI_CRCCALCULATION_DISABLE;
   SPI_InitStruct.CRCPoly = 7;

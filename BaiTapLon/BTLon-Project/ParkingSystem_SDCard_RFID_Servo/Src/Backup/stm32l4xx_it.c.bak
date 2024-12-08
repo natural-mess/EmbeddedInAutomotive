@@ -41,7 +41,9 @@
 
 /* Private variables ---------------------------------------------------------*/
 /* USER CODE BEGIN PV */
-
+volatile uint32_t servo_pulse = 500; // Pulse width for servo (500us ~ 0 degrees)
+volatile uint8_t direction = 1; // Direction of servo movement (1: increasing, 0: decreasing)
+volatile uint8_t led_state = 0; // LED state
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -51,17 +53,7 @@
 
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
-volatile uint8_t FatFsCnt = 0;
-volatile uint16_t Timer1, Timer2;
 
-void SDTimer_Handler(void)
-{
-  if(Timer1 > 0)
-    Timer1--;
-
-  if(Timer2 > 0)
-    Timer2--;
-}
 /* USER CODE END 0 */
 
 /* External variables --------------------------------------------------------*/
@@ -193,12 +185,7 @@ void PendSV_Handler(void)
 void SysTick_Handler(void)
 {
   /* USER CODE BEGIN SysTick_IRQn 0 */
-	FatFsCnt++;
-	  if(FatFsCnt >= 10)
-	  {
-	    FatFsCnt = 0;
-	    SDTimer_Handler();
-	  }
+
   /* USER CODE END SysTick_IRQn 0 */
   HAL_IncTick();
   /* USER CODE BEGIN SysTick_IRQn 1 */
@@ -214,16 +201,68 @@ void SysTick_Handler(void)
 /******************************************************************************/
 
 /**
-  * @brief This function handles SPI3 global interrupt.
+  * @brief This function handles TIM2 global interrupt.
   */
-void SPI3_IRQHandler(void)
+void TIM2_IRQHandler(void)
 {
-  /* USER CODE BEGIN SPI3_IRQn 0 */
+  /* USER CODE BEGIN TIM2_IRQn 0 */
+	static uint32_t steps = 0;
+  static uint32_t hold_counter = 0;
 
-  /* USER CODE END SPI3_IRQn 0 */
-  /* USER CODE BEGIN SPI3_IRQn 1 */
+  if (LL_TIM_IsActiveFlag_UPDATE(TIM2))
+  {
+    LL_TIM_ClearFlag_UPDATE(TIM2);
 
-  /* USER CODE END SPI3_IRQn 1 */
+    // Handle servo movement
+    if (direction == 1) // Moving from 0 to 90 degrees
+    {
+      if (steps < 50) // 50 steps in 0.5 seconds
+      {
+        servo_pulse += 40; // Increment pulse width
+        steps++;
+      }
+      else // Hold at 90 degrees for 5 seconds
+      {
+        hold_counter++;
+        if (hold_counter >= 500) // 500 * 10ms = 5 seconds
+        {
+          direction = 0; // Start moving back to 0 degrees
+          steps = 0;
+          hold_counter = 0;
+        }
+      }
+			}
+			else if (direction == 0) // Moving from 90 to 0 degrees
+			{
+					if (steps < 50) // 50 steps in 0.5 seconds
+					{
+							servo_pulse -= 40; // Decrement pulse width
+							steps++;
+					}
+					else // Stop movement
+					{
+							direction = 2; // Indicate servo is stopped
+							LL_GPIO_ResetOutputPin(GPIOA, LL_GPIO_PIN_5); // Turn off LED
+					}
+			}
+
+			// Update PWM pulse
+			LL_TIM_OC_SetCompareCH1(TIM2, servo_pulse);
+
+			// Toggle LED if servo is moving
+			if (direction != 2)
+			{
+					led_state = !led_state;
+					if (led_state)
+							LL_GPIO_SetOutputPin(GPIOA, LL_GPIO_PIN_5);
+					else
+							LL_GPIO_ResetOutputPin(GPIOA, LL_GPIO_PIN_5);
+			}
+    }
+  /* USER CODE END TIM2_IRQn 0 */
+  /* USER CODE BEGIN TIM2_IRQn 1 */
+
+  /* USER CODE END TIM2_IRQn 1 */
 }
 
 /* USER CODE BEGIN 1 */

@@ -7,6 +7,9 @@
 #include "diskio.h"
 #include "fatfs_sd.h"
 
+#define FCLK_SLOW() { MODIFY_REG(SPI2->CR1, SPI_CR1_BR, LL_SPI_BAUDRATEPRESCALER_DIV256); }	/* Set SCLK = slow, approx 250 KBits/s*/
+#define FCLK_FAST() { MODIFY_REG(SPI2->CR1, SPI_CR1_BR, LL_SPI_BAUDRATEPRESCALER_DIV8);}	/* Set SCLK = fast, approx 2 MBits/s */
+
 extern volatile uint16_t Timer1, Timer2;				/* 1ms Timer Counter */
 
 static volatile DSTATUS Stat = STA_NOINIT;	/* Disk Status */
@@ -266,6 +269,8 @@ DSTATUS SD_disk_initialize(BYTE drv)
 	/* no disk */
 	if(Stat & STA_NODISK) return Stat;
 
+	//FCLK_SLOW();
+	
 	/* power on */
 	SD_PowerOn();
 
@@ -344,6 +349,7 @@ DSTATUS SD_disk_initialize(BYTE drv)
 	/* Clear STA_NOINIT */
 	if (type)
 	{
+		//FCLK_FAST();
 		Stat &= ~STA_NOINIT;
 	}
 	else

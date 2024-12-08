@@ -74,6 +74,7 @@ void UART_SendChar(uint8_t ch);
 uint8_t UART_ReceiveChar(void);
 void UART_SendString(char *str);
 void UART_ReceiveString(char *buffer, uint8_t maxLength);
+void myprintf(const char *fmt, ...);
 /* USER CODE END EFP */
 
 /* Private defines -----------------------------------------------------------*/

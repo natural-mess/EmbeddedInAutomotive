@@ -47,7 +47,9 @@
 /* Private variables ---------------------------------------------------------*/
 
 /* USER CODE BEGIN PV */
-
+uint8_t status;
+uint8_t str[MAX_LEN]; // Max_LEN = 16
+uint8_t sNum[5];
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -59,14 +61,13 @@ static void MX_TIM1_Init(void);
 static void MX_TIM2_Init(void);
 static void MX_UART4_Init(void);
 /* USER CODE BEGIN PFP */
-void myprintf(const char *fmt, ...);
 void read_sdCard(void);
 /* USER CODE END PFP */
 
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
 typedef struct Node {
-    char UID[16];
+    uint8_t UID[32];
     char bsx[32];
     struct Node* next;
 } Node;
@@ -75,19 +76,59 @@ typedef struct Node {
 Node* head = NULL;
 
 // Function to create a new node and add it to the linked list
-void addNode(const char* UID, const char* bsx) {
-    Node* newNode = (Node*)malloc(sizeof(Node));
+void addNode(const uint8_t* UID, const char* bsx) {
+    if (UID == NULL || bsx == NULL) {
+        myprintf("Invalid input: UID or bsx is NULL\r\n");
+        return;
+    }
+		
+		Node* newNode = (Node*)malloc(sizeof(Node));
     if (newNode == NULL) {
         myprintf("Memory allocation failed!\r\n");
         return;
     }
-    strncpy(newNode->UID, UID, sizeof(newNode->UID) - 1);
-    newNode->UID[sizeof(newNode->UID) - 1] = '\0';
+		
+		memcpy(newNode->UID, UID, 5); // Copy exactly 5 bytes
+    //newNode->UID[5] = '\0';       // Ensure null termination for safe printing
     strncpy(newNode->bsx, bsx, sizeof(newNode->bsx) - 1);
     newNode->bsx[sizeof(newNode->bsx) - 1] = '\0';
+
     newNode->next = head;
     head = newNode;
 }
+
+/*
+void freeList() {
+    Node* current = head;
+    while (current != NULL) {
+        Node* temp = current;
+        current = current->next;
+        free(temp);
+    }
+    head = NULL;
+    myprintf("Linked list freed.\r\n");
+}
+*/
+bool searchLinkedList(const uint8_t* UID, char* bsx) {
+    Node* cur = head;
+    while (cur != NULL) {
+        if (memcmp(cur->UID, UID, 5) == 0) { // Compare exactly 5 bytes
+            strcpy(bsx, cur->bsx);          // Copy the corresponding BSX
+            return true;
+        }
+        cur = cur->next;
+    }
+    return false;
+}
+
+FATFS FatFs; 	//Fatfs handle
+FIL fil; 		//File handle
+FRESULT fres; //Result after operations
+
+DWORD free_clusters, free_sectors, total_sectors;
+FATFS* getFreeFs;
+
+char lineBuffer[128];
 /* USER CODE END 0 */
 
 /**
@@ -107,7 +148,7 @@ int main(void)
   HAL_Init();
 
   /* USER CODE BEGIN Init */
-
+	//freeList();
   /* USER CODE END Init */
 
   /* Configure the system clock */
@@ -126,8 +167,10 @@ int main(void)
   MX_UART4_Init();
   MX_FATFS_Init();
   /* USER CODE BEGIN 2 */
-	//read_sdCard();
-	
+	MFRC522_Init();
+	read_sdCard();
+	LL_TIM_EnableCounter(TIM2);
+  LL_TIM_EnableIT_UPDATE(TIM2);
   /* USER CODE END 2 */
 
   /* Infinite loop */
@@ -135,7 +178,40 @@ int main(void)
   while (1)
   {
     /* USER CODE END WHILE */
+		delay_ms(1000);
+		status = MFRC522_Request(PICC_REQIDL, str);
+		if (status != MI_OK)
+		{
+			continue;
+		}
+		delay_ms(1);
+		status = MFRC522_Anticoll(str);
+		if (status != MI_OK)
+		{
+			continue;
+		}
+		delay_ms(1);
 
+		memcpy(sNum, str, 5);
+		myprintf("SerialNumber: ");
+		for (int i = 0; i < 5; i++) 
+		{
+			myprintf("%d ", sNum[i]); // UID
+		}
+		myprintf("\n");
+		char bsx[32] = {0};
+		if (searchLinkedList(sNum, bsx) == true)
+		{
+			myprintf("Found BSX: %s\n", bsx);
+			flag_servo = 1;
+			myprintf("Opening barier\n");
+		}
+		else
+		{
+			myprintf("UID not found in linked list.\n");
+		}
+		delay_ms(5000);
+		myprintf("Closing barier\n");
     /* USER CODE BEGIN 3 */
   }
   /* USER CODE END 3 */
@@ -246,7 +322,7 @@ static void MX_SPI2_Init(void)
   SPI_InitStruct.ClockPolarity = LL_SPI_POLARITY_LOW;
   SPI_InitStruct.ClockPhase = LL_SPI_PHASE_1EDGE;
   SPI_InitStruct.NSS = LL_SPI_NSS_SOFT;
-  SPI_InitStruct.BaudRate = LL_SPI_BAUDRATEPRESCALER_DIV4;
+  SPI_InitStruct.BaudRate = LL_SPI_BAUDRATEPRESCALER_DIV128;
   SPI_InitStruct.BitOrder = LL_SPI_MSB_FIRST;
   SPI_InitStruct.CRCCalculation = LL_SPI_CRCCALCULATION_DISABLE;
   SPI_InitStruct.CRCPoly = 7;
@@ -291,10 +367,6 @@ static void MX_SPI3_Init(void)
   GPIO_InitStruct.Pull = LL_GPIO_PULL_NO;
   GPIO_InitStruct.Alternate = LL_GPIO_AF_6;
   LL_GPIO_Init(GPIOC, &GPIO_InitStruct);
-
-  /* SPI3 interrupt Init */
-  NVIC_SetPriority(SPI3_IRQn, NVIC_EncodePriority(NVIC_GetPriorityGrouping(),0, 0));
-  NVIC_EnableIRQ(SPI3_IRQn);
 
   /* USER CODE BEGIN SPI3_Init 1 */
 
@@ -351,7 +423,7 @@ static void MX_TIM1_Init(void)
   LL_TIM_SetTriggerOutput2(TIM1, LL_TIM_TRGO2_RESET);
   LL_TIM_DisableMasterSlaveMode(TIM1);
   /* USER CODE BEGIN TIM1_Init 2 */
-	//LL_TIM_EnableCounter(TIM1);
+	LL_TIM_EnableCounter(TIM1);
   /* USER CODE END TIM1_Init 2 */
 
 }
@@ -376,12 +448,16 @@ static void MX_TIM2_Init(void)
   /* Peripheral clock enable */
   LL_APB1_GRP1_EnableClock(LL_APB1_GRP1_PERIPH_TIM2);
 
+  /* TIM2 interrupt Init */
+  NVIC_SetPriority(TIM2_IRQn, NVIC_EncodePriority(NVIC_GetPriorityGrouping(),0, 0));
+  NVIC_EnableIRQ(TIM2_IRQn);
+
   /* USER CODE BEGIN TIM2_Init 1 */
 
   /* USER CODE END TIM2_Init 1 */
-  TIM_InitStruct.Prescaler = 269;
+  TIM_InitStruct.Prescaler = 26;
   TIM_InitStruct.CounterMode = LL_TIM_COUNTERMODE_UP;
-  TIM_InitStruct.Autoreload = 1999;
+  TIM_InitStruct.Autoreload = 9999;
   TIM_InitStruct.ClockDivision = LL_TIM_CLOCKDIVISION_DIV1;
   LL_TIM_Init(TIM2, &TIM_InitStruct);
   LL_TIM_DisableARRPreload(TIM2);
@@ -389,7 +465,7 @@ static void MX_TIM2_Init(void)
   TIM_OC_InitStruct.OCMode = LL_TIM_OCMODE_PWM1;
   TIM_OC_InitStruct.OCState = LL_TIM_OCSTATE_DISABLE;
   TIM_OC_InitStruct.OCNState = LL_TIM_OCSTATE_DISABLE;
-  TIM_OC_InitStruct.CompareValue = 150;
+  TIM_OC_InitStruct.CompareValue = 500;
   TIM_OC_InitStruct.OCPolarity = LL_TIM_OCPOLARITY_HIGH;
   LL_TIM_OC_Init(TIM2, LL_TIM_CHANNEL_CH1, &TIM_OC_InitStruct);
   LL_TIM_OC_DisableFast(TIM2, LL_TIM_CHANNEL_CH1);
@@ -399,7 +475,9 @@ static void MX_TIM2_Init(void)
   LL_TIM_SetTriggerOutput(TIM2, LL_TIM_TRGO_RESET);
   LL_TIM_DisableMasterSlaveMode(TIM2);
   /* USER CODE BEGIN TIM2_Init 2 */
-
+	LL_TIM_EnableCounter(TIM2);
+  LL_TIM_CC_EnableChannel(TIM2, LL_TIM_CHANNEL_CH1);
+  LL_TIM_GenerateEvent_UPDATE(TIM2);
   /* USER CODE END TIM2_Init 2 */
   LL_AHB2_GRP1_EnableClock(LL_AHB2_GRP1_PERIPH_GPIOA);
   /**TIM2 GPIO Configuration
@@ -538,7 +616,7 @@ static void MX_GPIO_Init(void)
 void delay_ms(uint32_t ms) {
     // Calculate how many full overflows and remaining ticks are needed
     uint32_t full_overflows = ms / 65; // Number of full 65 ms periods
-    uint32_t remaining_ticks = (ms % 65) * 1000; // Remaining ticks in µs
+    uint32_t remaining_ticks = (ms % 65) * 1000; // Remaining ticks in ?s
 
     // Reset the counter and ensure timer is running
     LL_TIM_SetCounter(TIM1, 0);
@@ -585,6 +663,32 @@ uint8_t SPI2_ReceiveByte(void)
 	
 		while (LL_SPI_IsActiveFlag_BSY(SPI2));
 
+		return receivedDataTemp; 
+}
+
+void SPI3_TransmitByte(uint8_t data)
+{    
+    // Doi cho den khi TX buffer trong (TXE flag duoc set)
+    while (!LL_SPI_IsActiveFlag_TXE(SPI3));
+		
+    // Gui 1 byte du lieu
+    LL_SPI_TransmitData8(SPI3, data);
+
+    // Doi cho den khi byte duoc truyen xong (BSY flag duoc reset)
+    while (LL_SPI_IsActiveFlag_BSY(SPI3));
+}
+
+uint8_t SPI3_ReceiveByte(void)
+{
+    uint8_t receivedDataTemp = 0x00u;
+		
+    // Doi cho den khi co du lieu nhan duoc (RXNE flag duoc set)
+    while (!LL_SPI_IsActiveFlag_RXNE(SPI3));
+
+    // Doc du lieu nhan duoc tu SPI
+    receivedDataTemp = LL_SPI_ReceiveData8(SPI3);
+	
+		while (LL_SPI_IsActiveFlag_BSY(SPI3));
 		return receivedDataTemp; 
 }
 
@@ -638,87 +742,141 @@ void myprintf(const char *fmt, ...)
 	UART_SendString((char *)buffer);
 }
 
-void read_sdCard(void)
-{
-	myprintf("\r\n~ Reading data from SD Card ~\r\n\r\n");
-	delay_ms(1000);
-	
-	//some variables for FatFs
-  FATFS FatFs; 	//Fatfs handle
-  FIL fil; 		//File handle
-  FRESULT fres; //Result after operations
-	
-	//Open the file system
-  fres = f_mount(&FatFs, "/", 1); //1=mount now
-  if (fres != FR_OK) 
-	{
-		myprintf("f_mount error (%i)\r\n", fres);
-		while(1);
-  }
-	
-	//Let's get some statistics from the SD card
-  DWORD free_clusters, free_sectors, total_sectors;
-	
-  FATFS* getFreeFs;
+//void read_sdCard(void)
+//{
+//	myprintf("\r\n~ Reading data from SD Card ~\r\n\r\n");
+//	delay_ms(1000);
+//	
+//	//Open the file system
+//  fres = f_mount(&FatFs, "/", 1); //1=mount now
+//  if (fres != FR_OK) 
+//	{
+//		myprintf("f_mount error (%i)\r\n", fres);
+//		while(1);
+//  }
+//	
+//  fres = f_getfree("", &free_clusters, &getFreeFs);
+//  if (fres != FR_OK) 
+//	{
+//		myprintf("f_getfree error (%i)\r\n", fres);
+//		while(1);
+//  }
 
-  fres = f_getfree("", &free_clusters, &getFreeFs);
-  if (fres != FR_OK) 
-	{
-		myprintf("f_getfree error (%i)\r\n", fres);
-		while(1);
-  }
+//  //Formula comes from ChaN's documentation
+//  total_sectors = (getFreeFs->n_fatent - 2) * getFreeFs->csize;
+//  free_sectors = free_clusters * getFreeFs->csize;
 
-  //Formula comes from ChaN's documentation
-  total_sectors = (getFreeFs->n_fatent - 2) * getFreeFs->csize;
-  free_sectors = free_clusters * getFreeFs->csize;
+//  myprintf("SD card stats:\r\n%10lu KiB total drive space.\r\n%10lu KiB available.\r\n", total_sectors / 2, free_sectors / 2);
+//	
+//  //Now let's try to open file "data.csv"
+//  fres = f_open(&fil, "data.csv", FA_READ);
+//  if (fres != FR_OK) 
+//	{
+//		myprintf("f_open error (%i)\r\n", fres);
+//		while(1);
+//  }
+//  myprintf("Opened 'data.csv' successfully!\r\n");
 
-  myprintf("SD card stats:\r\n%10lu KiB total drive space.\r\n%10lu KiB available.\r\n", total_sectors / 2, free_sectors / 2);
-	
-  //Now let's try to open file "data.csv"
-  fres = f_open(&fil, "data.csv", FA_READ);
-  if (fres != FR_OK) 
-	{
-		myprintf("f_open error (%i)\r\n", fres);
-		while(1);
-  }
-  myprintf("Opened 'data.csv' successfully!\r\n");
+//  //char lineBuffer[128];
+//	while (f_gets(lineBuffer, sizeof(lineBuffer), &fil)) 
+//	{
+//		myprintf("Read line: %s\r\n", lineBuffer);
 
-  char lineBuffer[128];
-	while (f_gets(lineBuffer, sizeof(lineBuffer), &fil)) 
-	{
-		myprintf("Read line: %s\r\n", lineBuffer);
+//		// Parse the line to extract UID and bsx
+//		char UID_temp[32] = {0};
+//		char bsx_temp[32] = {0};
+//    int parsed = sscanf(lineBuffer, "%31[^,],%31s", UID_temp, bsx_temp);
+//		if (parsed == 2) 
+//		{
+//			uint8_t UID[5] = {0};
+//			int success = sscanf(UID_temp, "%hhu %hhu %hhu %hhu %hhu", &UID[0], &UID[1], &UID[2], &UID[3], &UID[4]);
+//			if (success == 5) {
+//            addNode(UID, bsx_temp);  // Thêm vào linked list
+//        } else {
+//            myprintf("Failed to convert UID: %s\r\n", UID_temp);
+//        }
+//		} 
+//		else 
+//		{
+//			myprintf("Failed to parse line: %s\r\n", lineBuffer);
+//		}
+//	}
 
-		// Parse the line to extract UID and bsx
-		char UID[16] = {0};
-		char bsx[32] = {0};
-		int parsed = sscanf(lineBuffer, "%*d %*d %*d %*d %*d,%31s", bsx);
-		if (parsed == 1) 
-		{
-			// Format UID as needed; in this example, we use a fixed placeholder
-			snprintf(UID, sizeof(UID), "UID_%lu", (unsigned long)rand());
-			addNode(UID, bsx);
-		} 
-		else 
-		{
-			myprintf("Failed to parse line: %s\r\n", lineBuffer);
-		}
-	}
+//  //Close file!
+//  f_close(&fil);
+//	
+//	f_mount(NULL, "/", 0);
+//	
+//	myprintf("Read SD Card done!\r\n");
+//	
+//	// Print the linked list contents
+//  myprintf("Linked list contents:\r\n");
+//	/*
+//  Node* current = head;
+//  while (current != NULL) 
+//	{
+//    myprintf("UID: %s, bsx: %s\r\n", current->UID, current->bsx);
+//    current = current->next;
+//  }
+//	*/
+//	Node* cur = head;
+//	while (cur != NULL) 
+//	{
+//		myprintf("UID: ");
+//		for (int i = 0; i < 5; i++) 
+//		{
+//				myprintf("%d ", cur->UID[i]);
+//		}
+//		myprintf(" BSX: %s\n", cur->bsx);
+//		cur = cur->next;
+//	}
+//}
 
-  //Close file!
-  f_close(&fil);
-	
-	f_mount(NULL, "/", 0);
-	
-	myprintf("Read SD Card done!\r\n");
-	
-	// Print the linked list contents
-  myprintf("Linked list contents:\r\n");
-  Node* current = head;
-  while (current != NULL) 
-	{
-    myprintf("UID: %s, bsx: %s\r\n", current->UID, current->bsx);
-    current = current->next;
-  }
+void read_sdCard(void) {
+    myprintf("\r\n~ Reading data from SD Card ~\r\n");
+    delay_ms(1000);
+
+    // Mount file system
+    if (f_mount(&FatFs, "/", 1) != FR_OK) {
+        myprintf("Failed to mount file system\r\n");
+        return;
+    }
+
+    // Open the CSV file
+    if (f_open(&fil, "data.csv", FA_READ) != FR_OK) {
+        myprintf("Failed to open 'data.csv'\r\n");
+        f_mount(NULL, "/", 0);
+        return;
+    }
+    myprintf("Opened 'data.csv' successfully!\r\n");
+
+    // Read and parse lines from the file
+    char lineBuffer[128];
+    while (f_gets(lineBuffer, sizeof(lineBuffer), &fil)) {
+        char UID_temp[32] = {0}, bsx_temp[32] = {0};
+        if (sscanf(lineBuffer, "%31[^,],%31s", UID_temp, bsx_temp) == 2) {
+            uint8_t UID[5];
+            if (sscanf(UID_temp, "%hhu %hhu %hhu %hhu %hhu", &UID[0], &UID[1], &UID[2], &UID[3], &UID[4]) == 5) {
+                addNode(UID, bsx_temp);
+            } else {
+                myprintf("Invalid UID format: %s\r\n", UID_temp);
+            }
+        } else {
+            myprintf("Failed to parse line: %s\r\n", lineBuffer);
+        }
+    }
+
+    // Close file and unmount file system
+    f_close(&fil);
+    f_mount(NULL, "/", 0);
+
+    // Print the linked list contents
+    myprintf("Linked list contents:\r\n");
+    for (Node* cur = head; cur != NULL; cur = cur->next) {
+        myprintf("UID: %d %d %d %d %d BSX: %s\r\n", cur->UID[0], cur->UID[1], cur->UID[2], cur->UID[3], cur->UID[4], cur->bsx);
+    }
+
+    myprintf("Read SD Card done!\r\n");
 }
 /* USER CODE END 4 */
 

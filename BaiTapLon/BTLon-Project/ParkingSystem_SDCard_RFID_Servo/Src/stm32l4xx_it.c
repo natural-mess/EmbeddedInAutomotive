@@ -41,7 +41,13 @@
 
 /* Private variables ---------------------------------------------------------*/
 /* USER CODE BEGIN PV */
-
+volatile uint32_t servo_pulse = 500; // Pulse width for servo (500us ~ 0 degrees)
+volatile uint8_t flag_servo = 0; // Flag to start servo movement
+volatile uint8_t direction = 1; // 1: 0->90, 2: hold, 3: 90->0
+volatile uint32_t steps = 0;
+volatile uint32_t hold_counter = 0;
+volatile uint8_t led_state = 0; // LED state
+volatile uint32_t led_toggle_counter = 0; // Counter to toggle LED
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -51,17 +57,7 @@
 
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
-volatile uint8_t FatFsCnt = 0;
-volatile uint16_t Timer1, Timer2;
 
-void SDTimer_Handler(void)
-{
-  if(Timer1 > 0)
-    Timer1--;
-
-  if(Timer2 > 0)
-    Timer2--;
-}
 /* USER CODE END 0 */
 
 /* External variables --------------------------------------------------------*/
@@ -193,12 +189,7 @@ void PendSV_Handler(void)
 void SysTick_Handler(void)
 {
   /* USER CODE BEGIN SysTick_IRQn 0 */
-	FatFsCnt++;
-	  if(FatFsCnt >= 10)
-	  {
-	    FatFsCnt = 0;
-	    SDTimer_Handler();
-	  }
+
   /* USER CODE END SysTick_IRQn 0 */
   HAL_IncTick();
   /* USER CODE BEGIN SysTick_IRQn 1 */
@@ -214,16 +205,82 @@ void SysTick_Handler(void)
 /******************************************************************************/
 
 /**
-  * @brief This function handles SPI3 global interrupt.
+  * @brief This function handles TIM2 global interrupt.
   */
-void SPI3_IRQHandler(void)
+void TIM2_IRQHandler(void)
 {
-  /* USER CODE BEGIN SPI3_IRQn 0 */
+  /* USER CODE BEGIN TIM2_IRQn 0 */
+	if (LL_TIM_IsActiveFlag_UPDATE(TIM2))
+    {
+        LL_TIM_ClearFlag_UPDATE(TIM2);
 
-  /* USER CODE END SPI3_IRQn 0 */
-  /* USER CODE BEGIN SPI3_IRQn 1 */
+        if (flag_servo == 1) // Start servo movement
+        {
+            if (direction == 1) // Moving from 0 to 90 degrees
+            {
+                if (steps < 50) // 50 steps in 0.5 seconds
+                {
+                    servo_pulse += 20; // Increment pulse width
+                    steps++;
+                }
+                else // Hold at 90 degrees for 5 seconds
+                {
+                    direction = 2;
+                    steps = 0;
+                }
+            }
+            else if (direction == 2) // Holding at 90 degrees
+            {
+                hold_counter++;
+                if (hold_counter >= 500) // 500 * 10ms = 5 seconds
+                {
+                    direction = 3; // Start moving back to 0 degrees
+                    hold_counter = 0;
+                }
+            }
+            else if (direction == 3) // Moving from 90 to 0 degrees
+            {
+                if (steps < 50) // 50 steps in 0.5 seconds
+                {
+                    servo_pulse -= 20; // Decrement pulse width
+                    steps++;
+                }
+                else // Stop movement
+                {
+                    direction = 1;
+                    flag_servo = 0; // Reset flag
+										steps = 0;
+                    LL_GPIO_ResetOutputPin(GPIOA, LL_GPIO_PIN_5); // Turn off LED
+                }
+            }
 
-  /* USER CODE END SPI3_IRQn 1 */
+            // Update PWM pulse
+            LL_TIM_OC_SetCompareCH1(TIM2, servo_pulse);
+
+            // Handle LED state
+						led_toggle_counter++;
+            if (direction == 1 || direction == 3) // Blinking during movement
+            {
+							if (led_toggle_counter >= 5) // Toggle LED every 50ms (5 * 10ms)
+							{
+                led_state = !led_state;
+                if (led_state)
+                    LL_GPIO_SetOutputPin(GPIOA, LL_GPIO_PIN_5);
+                else
+                    LL_GPIO_ResetOutputPin(GPIOA, LL_GPIO_PIN_5);
+								led_toggle_counter = 0; // Reset counter after toggle
+							}
+            }
+            else if (direction == 2) // Turn off LED during hold
+            {
+                LL_GPIO_ResetOutputPin(GPIOA, LL_GPIO_PIN_5);
+            }
+        }
+    }
+  /* USER CODE END TIM2_IRQn 0 */
+  /* USER CODE BEGIN TIM2_IRQn 1 */
+
+  /* USER CODE END TIM2_IRQn 1 */
 }
 
 /* USER CODE BEGIN 1 */

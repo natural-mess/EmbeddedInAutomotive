@@ -37,6 +37,7 @@ extern "C" {
 #include "stm32l4xx_ll_pwr.h"
 #include "stm32l4xx_ll_dma.h"
 #include "stm32l4xx_ll_spi.h"
+#include "stm32l4xx_ll_usart.h"
 #include "stm32l4xx_ll_gpio.h"
 
 #if defined(USE_FULL_ASSERT)
@@ -70,6 +71,11 @@ void Error_Handler(void);
 void SPI3_TransmitByte(uint8_t data);
 uint8_t SPI3_ReceiveByte(void);
 uint8_t LL_SPI_TransmitReceive(SPI_TypeDef *SPIx, uint8_t pTxData);
+void UART_SendChar(uint8_t ch);
+uint8_t UART_ReceiveChar(void);
+void UART_SendString(char *str);
+void UART_ReceiveString(char *buffer, uint8_t maxLength);
+void myprintf(const char *fmt, ...);
 /* USER CODE END EFP */
 
 /* Private defines -----------------------------------------------------------*/

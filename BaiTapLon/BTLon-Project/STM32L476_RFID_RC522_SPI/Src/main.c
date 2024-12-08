@@ -47,16 +47,54 @@
 /* USER CODE BEGIN PV */
 uint8_t status;
 uint8_t str[MAX_LEN]; // Max_LEN = 16
-uint8_t sNum[5];
+uint8_t sNum[4];
 uint8_t rx_data1, rx_data2, rx_data3, rx_data4, rx_data5;
+uint8_t card;
+
+uchar defaultKey[6] = {0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF};
+//uchar defaultKey[6] = {0xA1, 0xA2, 0xA3, 0xA4, 0xA5, 0xA6};
+//uchar defaultKey[6] = {0xB1, 0xB2, 0xB3, 0xB4, 0xB5, 0xB6};
+/*
+uchar defaultKeys[7][6] = {
+    {0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF},
+    {0xA0, 0xA1, 0xA2, 0xA3, 0xA4, 0xA5},
+    {0xB0, 0xB1, 0xB2, 0xB3, 0xB4, 0xB5},
+    {0x4D, 0x3A, 0x99, 0xC3, 0x51, 0xDD},
+    {0x1A, 0x98, 0x2C, 0x7E, 0x45, 0x9A},
+    {0xD3, 0xF7, 0xD3, 0xF7, 0xD3, 0xF7},
+    {0xAA, 0xBB, 0xCC, 0xDD, 0xEE, 0xFF}
+};*/
+/*
+uchar defaultKeys[14][6] = 
+{
+	{0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF},
+    {0x00, 0x11, 0x22, 0x33, 0x44, 0x55},
+    {0x00, 0x01, 0x02, 0x03, 0x04, 0x05},
+    {0xA0, 0xA1, 0xA2, 0xA3, 0xA4, 0xA5},
+    {0xB0, 0xB1, 0xB2, 0xB3, 0xB4, 0xB5},
+    {0xAA, 0xAA, 0xAA, 0xAA, 0xAA, 0xAA},
+    {0xBB, 0xBB, 0xBB, 0xBB, 0xBB, 0xBB},
+    {0xAA, 0xBB, 0xCC, 0xDD, 0xEE, 0xFF},
+    {0XD3, 0XF7, 0XD3, 0XF7, 0XD3, 0XF7},
+    {0XB0, 0XB1, 0XB2, 0XB3, 0XB4, 0XB5},
+    {0X4D, 0X3A, 0X99, 0XC3, 0X51, 0XDD},
+    {0X1A, 0X98, 0X2C, 0X7E, 0X45, 0X9A},
+    {0X00, 0X00, 0X00, 0X00, 0X00, 0X00},
+    {0XAB, 0XCD, 0XEF, 0X12, 0X34, 0X56}
+};*/
+uchar dataToWrite1[16] = "59-T1-55555   "; // Chuoi 16 byte
+uchar dataToWrite2[16] = "59-T2-66666   "; // Chuoi 16 byte
+uchar readBuffer[16];
+uchar blockAddr = 8; 
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
 void SystemClock_Config(void);
 static void MX_GPIO_Init(void);
 static void MX_SPI3_Init(void);
+static void MX_UART4_Init(void);
 /* USER CODE BEGIN PFP */
-void myprintf(const char *fmt, ...);
+
 /* USER CODE END PFP */
 
 /* Private user code ---------------------------------------------------------*/
@@ -98,67 +136,9 @@ int main(void)
   /* Initialize all configured peripherals */
   MX_GPIO_Init();
   MX_SPI3_Init();
+  MX_UART4_Init();
   /* USER CODE BEGIN 2 */
 	MFRC522_Init();
-	/*
-	LL_mDelay(50);
-	LL_GPIO_SetOutputPin(MFRC522_CS_PORT, MFRC522_CS_PIN);
-	LL_GPIO_SetOutputPin(MFRC522_RST_PORT, MFRC522_RST_PIN);
-	LL_GPIO_ResetOutputPin(MFRC522_CS_PORT, MFRC522_CS_PIN);
-	uint8_t data = ((0x01<<1)&0x7E);
-	SPI3_TransmitByte(data);
-	SPI3_TransmitByte(0x0F);
-	rx_data1 = SPI3_ReceiveByte();
-	rx_data2 = SPI3_ReceiveByte();
-	//rx_data3 = SPI3_ReceiveByte();
-	LL_GPIO_SetOutputPin(MFRC522_CS_PORT, MFRC522_CS_PIN);
-	
-	LL_mDelay(100);
-	LL_GPIO_ResetOutputPin(MFRC522_CS_PORT, MFRC522_CS_PIN);
-	data = ((0x01<<1)&0x7E) | 0x80;
-	SPI3_TransmitByte(data);
-	SPI3_TransmitByte(0x00);
-	rx_data4 = SPI3_ReceiveByte();
-	rx_data5 = SPI3_ReceiveByte();
-	LL_GPIO_SetOutputPin(MFRC522_CS_PORT, MFRC522_CS_PIN);
-	*/
-	/*
-	LL_mDelay(50);
-	LL_GPIO_SetOutputPin(MFRC522_RST_PORT, MFRC522_RST_PIN);
-	LL_GPIO_ResetOutputPin(MFRC522_CS_PORT, MFRC522_CS_PIN);
-	while (!LL_SPI_IsActiveFlag_TXE(SPI3));
-	LL_SPI_TransmitData8(SPI3, 0x02);
-	//while (LL_SPI_IsActiveFlag_BSY(SPI3));	
-  
-	while (!LL_SPI_IsActiveFlag_TXE(SPI3));
-	LL_SPI_TransmitData8(SPI3, 0x0F);
-	//while (LL_SPI_IsActiveFlag_BSY(SPI3));
-	
-	while (!LL_SPI_IsActiveFlag_RXNE(SPI3)){};
-  rx_data1 = LL_SPI_ReceiveData8(SPI3);
-		
-	while (!LL_SPI_IsActiveFlag_RXNE(SPI3)){};
-  rx_data2 = LL_SPI_ReceiveData8(SPI3);
-	LL_GPIO_SetOutputPin(MFRC522_CS_PORT, MFRC522_CS_PIN);
-	
-	LL_mDelay(10);
-	LL_GPIO_ResetOutputPin(MFRC522_CS_PORT, MFRC522_CS_PIN);
-	
-	while (!LL_SPI_IsActiveFlag_TXE(SPI3)){};
-	LL_SPI_TransmitData8(SPI3, 0x82);
-	//while (LL_SPI_IsActiveFlag_BSY(SPI3));
-	
-	while (!LL_SPI_IsActiveFlag_TXE(SPI3)){};
-	LL_SPI_TransmitData8(SPI3, 0x00);
-	//while (LL_SPI_IsActiveFlag_BSY(SPI3));
-		
-	while (!LL_SPI_IsActiveFlag_RXNE(SPI3)){};
-  rx_data3 = LL_SPI_ReceiveData8(SPI3);
-	
-	while (!LL_SPI_IsActiveFlag_RXNE(SPI3)){};
-  rx_data4 = LL_SPI_ReceiveData8(SPI3);
-	LL_GPIO_SetOutputPin(MFRC522_CS_PORT, MFRC522_CS_PIN);
-		*/
   /* USER CODE END 2 */
 
   /* Infinite loop */
@@ -166,10 +146,111 @@ int main(void)
   while (1)
   {
     /* USER CODE END WHILE */
+		LL_mDelay(1000);
 		status = MFRC522_Request(PICC_REQIDL, str);
-  status = MFRC522_Anticoll(str);
-  memcpy(sNum, str, 5);
-  LL_mDelay(100);
+		if (status != MI_OK) 
+		{
+			myprintf("MFRC522_Request failed");
+      //while(1){}
+    }
+		LL_mDelay(1);
+		status = MFRC522_Anticoll(str);
+		if (status != MI_OK) 
+		{
+			myprintf("MFRC522_Anticoll failed");
+      //while(1){}
+    }
+		memcpy(sNum, str, 4);
+		myprintf("SerialNumber: ");
+    for (int i = 0; i < 4; i++) 
+		{
+      myprintf("%02X ", sNum[i]); // UID
+    }
+    myprintf("\n");
+		LL_mDelay(1);
+		/*
+		status = MFRC522_SelectTag(sNum);
+    if (status != MI_OK) 
+		{
+			myprintf("MFRC522_SelectTag failed");
+      while(1){}
+		}
+		*/
+		/*
+		for (int attempt = 0; attempt < 3; attempt++) 
+		{
+			status = MFRC522_SelectTag(str);
+			if (status == MI_OK) 
+			{
+        myprintf("MFRC522_SelectTag ok\n");
+        break;
+			} 
+			else if (attempt == 2) 
+			{
+        myprintf("MFRC522_SelectTag not ok\n");
+        //while(1){}
+			}
+		}
+		LL_mDelay(1);		
+		status = MFRC522_Auth(PICC_AUTHENT1A, blockAddr, defaultKey, sNum);
+		if (status == MI_OK) 
+		{
+       myprintf("MFRC522_Auth ok\n");
+		} 
+		else
+		{
+       myprintf("MFRC522_Auth not ok\n");
+       while(1){}
+		}
+
+		LL_mDelay(1);
+		status = MFRC522_Write(blockAddr, dataToWrite1);
+		if (status == MI_OK) 
+		{
+      myprintf("Write data to block %d\n", blockAddr);
+    }
+		else
+		{
+			myprintf("Failed to write data\n");
+      MFRC522_Halt();
+      while(1){}
+		}
+		LL_mDelay(1000);
+		status = MFRC522_Read(blockAddr, readBuffer);
+		if (status == MI_OK) {
+		
+    myprintf("Data from block %d: ", blockAddr);
+    for (int i = 0; i < 16; i++) {
+      myprintf("%c", readBuffer[i]); 
+    }
+    myprintf("\n");
+			
+    } else {
+      myprintf("Failed to read data\n");
+			MFRC522_Halt();
+      while(1){}
+    }
+    MFRC522_Halt();
+    break; 
+		*/
+		/*
+		memcpy(sNum, str, 5);
+		LL_mDelay(100);
+		if((str[0]==113) && (str[1]==223) && (str[2]==49) && (str[3]==2) && (str[4]==157) )
+    {
+			card = 1;
+			LL_mDelay(100);
+    }
+    else if((str[0]==115) && (str[1]==233) && (str[2]==59) && (str[3]==218) && (str[4]==123) )
+    {
+			card = 2;
+      LL_mDelay(2000);
+    }
+    else
+    {
+      card = 3;
+		}
+		*/
     /* USER CODE BEGIN 3 */
   }
   /* USER CODE END 3 */
@@ -279,6 +360,59 @@ static void MX_SPI3_Init(void)
 }
 
 /**
+  * @brief UART4 Initialization Function
+  * @param None
+  * @retval None
+  */
+static void MX_UART4_Init(void)
+{
+
+  /* USER CODE BEGIN UART4_Init 0 */
+
+  /* USER CODE END UART4_Init 0 */
+
+  LL_USART_InitTypeDef UART_InitStruct = {0};
+
+  LL_GPIO_InitTypeDef GPIO_InitStruct = {0};
+
+  LL_RCC_SetUARTClockSource(LL_RCC_UART4_CLKSOURCE_PCLK1);
+
+  /* Peripheral clock enable */
+  LL_APB1_GRP1_EnableClock(LL_APB1_GRP1_PERIPH_UART4);
+
+  LL_AHB2_GRP1_EnableClock(LL_AHB2_GRP1_PERIPH_GPIOA);
+  /**UART4 GPIO Configuration
+  PA0   ------> UART4_TX
+  PA1   ------> UART4_RX
+  */
+  GPIO_InitStruct.Pin = LL_GPIO_PIN_0|LL_GPIO_PIN_1;
+  GPIO_InitStruct.Mode = LL_GPIO_MODE_ALTERNATE;
+  GPIO_InitStruct.Speed = LL_GPIO_SPEED_FREQ_VERY_HIGH;
+  GPIO_InitStruct.OutputType = LL_GPIO_OUTPUT_PUSHPULL;
+  GPIO_InitStruct.Pull = LL_GPIO_PULL_NO;
+  GPIO_InitStruct.Alternate = LL_GPIO_AF_8;
+  LL_GPIO_Init(GPIOA, &GPIO_InitStruct);
+
+  /* USER CODE BEGIN UART4_Init 1 */
+
+  /* USER CODE END UART4_Init 1 */
+  UART_InitStruct.BaudRate = 115200;
+  UART_InitStruct.DataWidth = LL_USART_DATAWIDTH_8B;
+  UART_InitStruct.StopBits = LL_USART_STOPBITS_1;
+  UART_InitStruct.Parity = LL_USART_PARITY_NONE;
+  UART_InitStruct.TransferDirection = LL_USART_DIRECTION_TX_RX;
+  UART_InitStruct.HardwareFlowControl = LL_USART_HWCONTROL_NONE;
+  UART_InitStruct.OverSampling = LL_USART_OVERSAMPLING_16;
+  LL_USART_Init(UART4, &UART_InitStruct);
+  LL_USART_ConfigAsyncMode(UART4);
+  LL_USART_Enable(UART4);
+  /* USER CODE BEGIN UART4_Init 2 */
+
+  /* USER CODE END UART4_Init 2 */
+
+}
+
+/**
   * @brief GPIO Initialization Function
   * @param None
   * @retval None
@@ -291,6 +425,7 @@ static void MX_GPIO_Init(void)
 
   /* GPIO Ports Clock Enable */
   LL_AHB2_GRP1_EnableClock(LL_AHB2_GRP1_PERIPH_GPIOC);
+  LL_AHB2_GRP1_EnableClock(LL_AHB2_GRP1_PERIPH_GPIOA);
   LL_AHB2_GRP1_EnableClock(LL_AHB2_GRP1_PERIPH_GPIOD);
 
   /**/
@@ -362,7 +497,55 @@ uint8_t LL_SPI_TransmitReceive(SPI_TypeDef *SPIx, uint8_t pTxData)
     return LL_SPI_ReceiveData8(SPIx);
 }
 
+// Send 1 byte through UART
+void UART_SendChar(uint8_t ch) 
+{
+    while (!LL_USART_IsActiveFlag_TXE(UART4));
+    LL_USART_TransmitData8(UART4, ch);
+    while (!LL_USART_IsActiveFlag_TC(UART4));
+}
 
+// Receive 1 byte from UART
+uint8_t UART_ReceiveChar(void) 
+{
+    while (!LL_USART_IsActiveFlag_RXNE(UART4));
+    return LL_USART_ReceiveData8(UART4);
+}
+
+// Send a string through UART
+void UART_SendString(char *str) 
+{
+    while (*str) {
+        UART_SendChar(*str++);
+    }
+}
+
+// Receive a string from UART (stop when see character '\n')
+void UART_ReceiveString(char *buffer, uint8_t maxLength) 
+{
+    uint8_t index = 0;
+    char receivedChar;
+
+    do {
+        receivedChar = UART_ReceiveChar();
+        buffer[index++] = receivedChar;
+    } while (receivedChar != '\n' && index < maxLength - 1);
+
+    buffer[index] = '\0';
+}
+
+void myprintf(const char *fmt, ...) 
+{
+  static char buffer[256];
+  va_list args;
+  va_start(args, fmt);
+  vsnprintf(buffer, sizeof(buffer), fmt, args);
+  va_end(args);
+
+  int len = strlen(buffer);
+  //HAL_UART_Transmit(&huart2, (uint8_t*)buffer, len, -1);
+	UART_SendString((char *)buffer);
+}
 /* USER CODE END 4 */
 
 /**
