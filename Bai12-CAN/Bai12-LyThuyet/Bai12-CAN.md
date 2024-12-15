@@ -38,6 +38,8 @@ Hai dây tín hiệu này được xoắn lại tạo thành đường dây xo�
 - Giảm số lượng dây dẫn: Trong Bus topology, tất cả các thiết bị chia sẻ chung một đường dây truyền dữ liệu. Điều này có nghĩa là thay vì phải sử dụng nhiều dây dẫn cho từng kết nối giữa các thiết bị, bạn chỉ cần một đường dây duy nhất cho toàn bộ mạng. Việc giảm số lượng dây dẫn không chỉ giúp tiết kiệm chi phí vật liệu mà còn giúp tiết kiệm không gian trong thiết kế hệ thống. Điều này đặc biệt quan trọng trong các ứng dụng nhúng, nơi mà không gian và trọng lượng là yếu tố quan trọng. Với cấu trúc bus, việc lắp đặt và bảo trì hệ thống dây dẫn trở nên đơn giản hơn. Bạn không cần phải quản lý nhiều kết nối phức tạp, mà chỉ cần tập trung vào một đường dây duy nhất.
 - Termination Resistor (Điện trở kết cuối): Khi tín hiệu được truyền qua một dây dẫn, nó tạo ra một sóng điện từ di chuyển dọc theo dây. Nếu dây dẫn này không được kết thúc đúng cách, sóng tín hiệu có thể gặp phải một "đầu mở" (open end) ở cuối dây dẫn. Khi sóng tín hiệu đến đầu mở này, nó không có nơi nào để đi và sẽ bị phản xạ trở lại vào trong dây dẫn. Khi sóng tín hiệu gặp phải một đầu mở, một phần của tín hiệu sẽ quay trở lại, gây ra hiện tượng phản xạ. Điều này có thể dẫn đến việc tín hiệu bị méo hoặc bị nhiễu, làm cho các thiết bị nhận không thể đọc được tín hiệu chính xác. Điện trở kết cuối được kết nối ở hai đầu của bus CAN (thường là 120Ω) để tạo ra một "tải" cho tín hiệu. Khi tín hiệu đến điện trở kết cuối, nó sẽ được hấp thụ bởi điện trở thay vì bị phản xạ trở lại. Điện trở sẽ tạo ra một dòng điện tương ứng với điện áp của tín hiệu. Dòng điện này sẽ tiêu thụ năng lượng của tín hiệu, làm cho tín hiệu không còn đủ năng lượng để quay trở lại. Nếu điện trở kết cuối có giá trị trở kháng phù hợp với trở kháng của dây dẫn, nó sẽ hấp thụ tín hiệu một cách hiệu quả mà không gây ra méo tín hiệu. Điều này giúp duy trì tính ổn định của tín hiệu trên bus, giúp ngăn chặn hiện tượng phản xạ và đảm bảo rằng tín hiệu không bị méo. Bằng cách hấp thụ tín hiệu thay vì phản xạ, điện trở kết cuối giúp duy trì tính ổn định của tín hiệu trên bus.
 
+![alt text](_assets/TerminationResistor.png)
+
 #### 2.2. Các thiết bị trên bus CAN
 Các node nếu muốn gửi và nhận dữ liệu CAN thì bên trong các node cần có những thành phần sau:
 - Bộ điều khiển CAN (CAN Controller): Đây là thành phần chính trong node CAN, có nhiệm vụ xử lý toàn bộ giao tiếp CAN.
@@ -54,6 +56,8 @@ Các node nếu muốn gửi và nhận dữ liệu CAN thì bên trong các nod
   - Tạo ra thông điệp CAN để truyền đi.
   - Quản lý các khung dữ liệu, bit arbitration và quá trình xử lý lỗi.
   - Điều khiển hành vi của node (ví dụ: bật/tắt node, reset node khi gặp lỗi bus-off).
+
+![alt text](_assets/CANNode.png)
 
 #### 2.3. Đặc điểm giao tiếp của CAN
 - Không cần máy tính chủ (No Master-Slave Architecture): Trong mạng CAN, không có một máy tính chủ (master) nào điều khiển các thiết bị (nodes). Thay vào đó, tất cả các thiết bị đều có quyền truy cập vào bus và có thể gửi hoặc nhận dữ liệu bất cứ lúc nào khi bus rảnh. Điều này cho phép các thiết bị hoạt động độc lập và dễ dàng mở rộng mạng bằng cách thêm hoặc loại bỏ các thiết bị mà không cần thay đổi cấu trúc tổng thể của mạng.
@@ -85,6 +89,8 @@ Bit Recessive (1):
 
 
 Khi nhiều node cố gắng gửi dữ liệu cùng một lúc, trạng thái dominant sẽ chiếm ưu thế. Điều này có nghĩa là nếu một node gửi tín hiệu dominant trong khi một node khác gửi tín hiệu recessive, tín hiệu dominant sẽ thắng và được truyền đi. Điều này giúp đảm bảo rằng thông điệp quan trọng được gửi đi mà không bị cản trở. Phương pháp này được gọi là "non-destructive arbitration", cho phép các node cạnh tranh để gửi dữ liệu mà không làm mất thông tin.
+
+
 
 ### 3. Các loại khung dữ liệu trong CAN
 #### 3.1. Data frame

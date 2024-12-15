@@ -46,7 +46,9 @@ Using STM32 to learn about Automotive
 
 ### Bài tập lớn
 - [Bài tập lớn - Project](BaiTapLon/BTLon-Project/)
+- [Bài tập lớn - Lý thuyết](BaiTapLon/BTLon-LyThuyet/BTLon.md)
 
 ### Bài 12 - CAN
 - [Bài 12 - Lý thuyết](Bai12-CAN/Bai12-LyThuyet/Bai12-CAN.md)
+- [Bài 12 - Software](Bai12-CAN/Bai12-LyThuyet/Bai12-CAN_Software.md)
 - [Bài 12 - Project](Bai12-CAN/Bai12-Project/)
