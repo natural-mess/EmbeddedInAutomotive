@@ -43,7 +43,8 @@
 /* Private variables ---------------------------------------------------------*/
 
 /* USER CODE BEGIN PV */
-CANBusTxFrameDef TXFrame;
+CANBusTxFrameDef txFrame;
+CANBusRxFrameDef rxFrame;
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -52,6 +53,7 @@ static void MX_GPIO_Init(void);
 static void MX_TIM2_Init(void);
 /* USER CODE BEGIN PFP */
 void delay_ms(uint32_t timeDelay);
+int ButtonPressed(void);
 /* USER CODE END PFP */
 
 /* Private user code ---------------------------------------------------------*/
@@ -99,13 +101,37 @@ int main(void)
 	CANBus_L476_Filter_Configuration();
 	CANBus_L476_Start();
   /* USER CODE END 2 */
+	LL_mDelay(100);
+	
+//	txFrame.identifier = 0x011;    // Standard ID
+//	txFrame.length = 8;            // 8 bytes of data
+//	txFrame.data[0] = 0x55;
+//	txFrame.data[1] = 0x44;
+//	txFrame.data[2] = 0x33;
+//	txFrame.data[3] = 0x22;
+//	txFrame.data[4] = 0x22;
+//	txFrame.data[5] = 0x33;
+//	txFrame.data[6] = 0x44;
+//	txFrame.data[7] = 0x55;
+//	
+//	CANBus_L476_SendMessage(&txFrame);
+//	
+//	LL_mDelay(2000);
+//	
+	txFrame.identifier = 0x00;    // Standard ID
+	txFrame.length = 8;            // 8 bytes of data
+	txFrame.data[0] = 0xAA;
+	txFrame.data[1] = 0xBB;
+	txFrame.data[2] = 0xCC;
+	txFrame.data[3] = 0xDD;
+	txFrame.data[4] = 0x11;
+	txFrame.data[5] = 0x22;
+	txFrame.data[6] = 0x33;
+	txFrame.data[7] = 0x44;
 
-  /* Infinite loop */
-  /* USER CODE BEGIN WHILE */
-  while (1)
-  {
-    /* USER CODE END WHILE */
-		for (int i=0;i<8;i++)
+  //CANBus_L476_SendMessage(&txFrame);
+	/*
+	for (int i=0;i<8;i++)
 		{
 			TXFrame.data[i]=i;
 		}
@@ -114,7 +140,31 @@ int main(void)
 		TXFrame.length=8;
 		CANBus_L476_SendMessage( &TXFrame );
 		LL_mDelay(1000);
+		*/
+  /* Infinite loop */
+  /* USER CODE BEGIN WHILE */
+  while (1)
+  {
+    /* USER CODE END WHILE */
     /* USER CODE BEGIN 3 */
+		if(ButtonPressed())
+		{
+			if (txFrame.identifier == 0x1A1)
+			{
+				txFrame.identifier = 0x4A3;
+				CANBus_L476_SendMessage(&txFrame);
+			}
+			else if (txFrame.identifier == 0x4A3)
+			{
+				txFrame.identifier = 0x5A1;
+				CANBus_L476_SendMessage(&txFrame);
+			}
+			else if (txFrame.identifier == 0x5A1 || txFrame.identifier == 0x00)
+			{
+				txFrame.identifier = 0x1A1;
+				CANBus_L476_SendMessage(&txFrame);
+			}
+		}
   }
   /* USER CODE END 3 */
 }
@@ -125,8 +175,8 @@ int main(void)
   */
 void SystemClock_Config(void)
 {
-  LL_FLASH_SetLatency(LL_FLASH_LATENCY_0);
-  while(LL_FLASH_GetLatency()!= LL_FLASH_LATENCY_0)
+  LL_FLASH_SetLatency(LL_FLASH_LATENCY_2);
+  while(LL_FLASH_GetLatency()!= LL_FLASH_LATENCY_2)
   {
   }
   LL_PWR_SetRegulVoltageScaling(LL_PWR_REGU_VOLTAGE_SCALE1);
@@ -153,10 +203,19 @@ void SystemClock_Config(void)
 
   }
   LL_RCC_MSI_EnablePLLMode();
-  LL_RCC_SetSysClkSource(LL_RCC_SYS_CLKSOURCE_MSI);
+  LL_RCC_PLL_ConfigDomain_SYS(LL_RCC_PLLSOURCE_MSI, LL_RCC_PLLM_DIV_1, 45, LL_RCC_PLLR_DIV_4);
+  LL_RCC_PLL_EnableDomain_SYS();
+  LL_RCC_PLL_Enable();
+
+   /* Wait till PLL is ready */
+  while(LL_RCC_PLL_IsReady() != 1)
+  {
+
+  }
+  LL_RCC_SetSysClkSource(LL_RCC_SYS_CLKSOURCE_PLL);
 
    /* Wait till System clock is ready */
-  while(LL_RCC_GetSysClkSource() != LL_RCC_SYS_CLKSOURCE_STATUS_MSI)
+  while(LL_RCC_GetSysClkSource() != LL_RCC_SYS_CLKSOURCE_STATUS_PLL)
   {
 
   }
@@ -164,9 +223,9 @@ void SystemClock_Config(void)
   LL_RCC_SetAPB1Prescaler(LL_RCC_APB1_DIV_1);
   LL_RCC_SetAPB2Prescaler(LL_RCC_APB2_DIV_1);
 
-  LL_Init1msTick(4000000);
+  LL_Init1msTick(45000000);
 
-  LL_SetSystemCoreClock(4000000);
+  LL_SetSystemCoreClock(45000000);
 }
 
 /**
@@ -189,7 +248,7 @@ static void MX_TIM2_Init(void)
   /* USER CODE BEGIN TIM2_Init 1 */
 
   /* USER CODE END TIM2_Init 1 */
-  TIM_InitStruct.Prescaler = 399;
+  TIM_InitStruct.Prescaler = 449;
   TIM_InitStruct.CounterMode = LL_TIM_COUNTERMODE_UP;
   TIM_InitStruct.Autoreload = 9;
   TIM_InitStruct.ClockDivision = LL_TIM_CLOCKDIVISION_DIV1;
@@ -239,6 +298,20 @@ void delay_ms(uint32_t timeDelay)
         while (!LL_TIM_IsActiveFlag_UPDATE(TIM2));
         LL_TIM_ClearFlag_UPDATE(TIM2);
     }
+}
+
+int ButtonPressed(void)
+{
+    if (!LL_GPIO_IsInputPinSet(GPIOC, LL_GPIO_PIN_13))  
+		{
+        LL_mDelay(100); 
+
+        if (!LL_GPIO_IsInputPinSet(GPIOC, LL_GPIO_PIN_13))
+        {
+            return 1;  
+        }
+    }
+    return 0;  // Nút b?m chua nh?n
 }
 /* USER CODE END 4 */
 

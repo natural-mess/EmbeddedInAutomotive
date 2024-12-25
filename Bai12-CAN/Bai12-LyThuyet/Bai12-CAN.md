@@ -48,16 +48,20 @@ Các node nếu muốn gửi và nhận dữ liệu CAN thì bên trong các nod
   - Phát hiện và xử lý các lỗi truyền thông CAN.
   - Kiểm soát việc truyền lại thông điệp khi gặp lỗi.
   - Cung cấp giao diện giữa các vi điều khiển và bus CAN.
+  
+![alt text](_assets/CANNode.png)
+
 - Transceiver CAN (CAN Transceiver):
   - Chuyển đổi tín hiệu số từ bộ điều khiển CAN thành tín hiệu điện áp dạng differential (CANH và CANL) để gửi lên bus CAN và ngược lại
   - Đảm bảo tín hiệu truyền và nhận trên bus CAN có độ chính xác và tốc độ cao.
+  
+![alt text](_assets/CAN_Transceiver.png)
+
 - Vi điều khiển (Microcontroller): là thành phần trung tâm điều khiển hoạt động của node CAN.
   - Đọc và xử lý thông điệp CAN.
   - Tạo ra thông điệp CAN để truyền đi.
   - Quản lý các khung dữ liệu, bit arbitration và quá trình xử lý lỗi.
   - Điều khiển hành vi của node (ví dụ: bật/tắt node, reset node khi gặp lỗi bus-off).
-
-![alt text](_assets/CANNode.png)
 
 #### 2.3. Đặc điểm giao tiếp của CAN
 - Không cần máy tính chủ (No Master-Slave Architecture): Trong mạng CAN, không có một máy tính chủ (master) nào điều khiển các thiết bị (nodes). Thay vào đó, tất cả các thiết bị đều có quyền truy cập vào bus và có thể gửi hoặc nhận dữ liệu bất cứ lúc nào khi bus rảnh. Điều này cho phép các thiết bị hoạt động độc lập và dễ dàng mở rộng mạng bằng cách thêm hoặc loại bỏ các thiết bị mà không cần thay đổi cấu trúc tổng thể của mạng.
@@ -68,7 +72,7 @@ Nếu có nhiều node cùng muốn gửi dữ liệu lên bus cùng một lúc,
   - Những node khác có ID ưu tiên cao hơn sẽ tự động dừng lại và chờ lượt tiếp theo để gửi thông điệp.
   - Quá trình arbitration diễn ra mà không gây mất dữ liệu hay làm gián đoạn các thiết bị khác, vì thế mạng CAN là một hệ thống non-destructive (không gây mất dữ liệu).
 - Giao tiếp song công (Full-duplex Communication): Mạng CAN hỗ trợ giao tiếp song công, có nghĩa là các thiết bị có thể gửi và nhận dữ liệu đồng thời. Điều này giúp tăng cường hiệu suất của mạng và giảm thiểu độ trễ trong việc truyền thông. Việc sử dụng tín hiệu vi sai (differential signaling) giữa CANH và CANL giúp duy trì tính ổn định của tín hiệu trong quá trình giao tiếp song công.
-- Phát hiện và xử lý lỗi tự động: AN có nhiều cơ chế để phát hiện lỗi, bao gồm kiểm tra CRC (Cyclic Redundancy Check), kiểm tra bit, và kiểm tra định dạng. Nếu một thiết bị phát hiện lỗi trong thông điệp, nó sẽ gửi một thông điệp lỗi để thông báo cho các thiết bị khác. Khi phát hiện lỗi, thiết bị có thể tự động thực hiện các hành động như gửi lại thông điệp hoặc chuyển sang trạng thái lỗi (active, passive, hoặc bus-off) để đảm bảo rằng mạng vẫn hoạt động ổn định.
+- Phát hiện và xử lý lỗi tự động: CAN có nhiều cơ chế để phát hiện lỗi, bao gồm kiểm tra CRC (Cyclic Redundancy Check), kiểm tra bit, và kiểm tra định dạng. Nếu một thiết bị phát hiện lỗi trong thông điệp, nó sẽ gửi một thông điệp lỗi để thông báo cho các thiết bị khác. Khi phát hiện lỗi, thiết bị có thể tự động thực hiện các hành động như gửi lại thông điệp hoặc chuyển sang trạng thái lỗi (active, passive, hoặc bus-off) để đảm bảo rằng mạng vẫn hoạt động ổn định.
 
 #### 2.4. Trạng thái “dominant” và “recessive” trong CAN
 Trạng thái "Dominant" (Chiếm ưu thế): được biểu diễn bằng một điện áp cao hơn trên dây CANH (CAN High) và một điện áp thấp hơn trên dây CANL (CAN Low). Cụ thể, trong trạng thái dominant, điện áp trên CANH thường khoảng 2.5V đến 3.5V, trong khi điện áp trên CANL khoảng 1.5V đến 2.5V. Bit dominant được biểu diễn bằng 0.
@@ -90,7 +94,24 @@ Bit Recessive (1):
 
 Khi nhiều node cố gắng gửi dữ liệu cùng một lúc, trạng thái dominant sẽ chiếm ưu thế. Điều này có nghĩa là nếu một node gửi tín hiệu dominant trong khi một node khác gửi tín hiệu recessive, tín hiệu dominant sẽ thắng và được truyền đi. Điều này giúp đảm bảo rằng thông điệp quan trọng được gửi đi mà không bị cản trở. Phương pháp này được gọi là "non-destructive arbitration", cho phép các node cạnh tranh để gửi dữ liệu mà không làm mất thông tin.
 
+![alt text](_assets/CAN_DominantRecessive.png)
 
+#### 2.5. Các loại CAN bus
+**CAN Tốc Độ Thấp**
+
+CAN Tốc Độ Thấp, còn được gọi là chịu lỗi hoặc ISO 11898-3, hoạt động với tốc độ lên đến 125 kbps. Nó được thiết kế cho các hệ thống ít quan trọng hơn như mô-đun điều khiển thân xe, khóa cửa, điều khiển cửa sổ, v.v., nơi tốc độ truyền dữ liệu không phải là yếu tố quan trọng. Tính năng chính của nó là khả năng tiếp tục hoạt động ngay cả khi một dây trong bus bị hỏng.
+
+![alt text](_assets/CAN_LowSpeed.png)
+
+**CAN Tốc Độ Cao**
+
+CAN Tốc Độ Cao, hay ISO 11898-2, có thể đạt tốc độ lên đến 1 Mbps. Loại mạng này phù hợp cho các ứng dụng nhạy cảm về thời gian hơn như hệ thống quản lý động cơ và hệ thống phanh điện tử do tốc độ truyền dữ liệu nhanh hơn so với các mạng tốc độ thấp. Tuy nhiên, nó thiếu khả năng chịu lỗi mà các mạng tốc độ thấp có.
+
+![alt text](_assets/CAN_HighSpeed.png)
+
+**CAN FD (Tốc Độ Dữ Liệu Linh Hoạt)**
+
+CAN FD, được Bosch giới thiệu vào năm 2012, là một mở rộng của các mạng tốc độ cao với tốc độ dữ liệu tăng lên—lên đến 5 Mbps—trong khi vẫn duy trì khả năng tương thích ngược với các thiết bị tốc độ cao hiện có. Lợi thế chính của công nghệ này nằm ở khả năng truyền tải khối lượng dữ liệu lớn hơn một cách hiệu quả hơn so với CAN truyền thống, làm cho nó trở nên lý tưởng cho các phương tiện hiện đại với các hệ thống điện tử ngày càng phức tạp.
 
 ### 3. Các loại khung dữ liệu trong CAN
 #### 3.1. Data frame
@@ -120,8 +141,13 @@ Cấu trúc:
 - End of Frame (7 bits):
 	- Công dụng: Đánh dấu kết thúc của khung dữ liệu.
 
-
 Data Frame được sử dụng để truyền thông tin từ một thiết bị đến tất cả các thiết bị khác trong mạng.
+
+![alt text](_assets/CAN_DataFrame_STD_EXT.png)
+
+![alt text](_assets/CAN_DataFrame_DLC_DataField.png)
+
+![alt text](_assets/CAN_DataFrame_PhysicalTransfer.png)
 
 #### 3.2. Remote frame
 Remote Frame được sử dụng để yêu cầu dữ liệu từ một thiết bị khác mà không gửi dữ liệu thực tế. Thay vì chứa dữ liệu thực, Remote Frame chứa ID của node cần yêu cầu, cùng với bit điều khiển RTR (Remote Transmission Request).
@@ -150,12 +176,16 @@ Cấu trúc:
 
 Khi một thiết bị cần dữ liệu từ một thiết bị khác, nó sẽ gửi một Remote Frame để yêu cầu dữ liệu. Remote Frame này sẽ bao gồm ID của thông điệp mà node yêu cầu, ID này phải khớp với ID của Data Frame mà node khác sẽ gửi để đáp ứng yêu cầu, và Control Field để chỉ định số byte dữ liệu mà node yêu cầu. Tất cả các node trong mạng CAN đều lắng nghe bus để nhận các thông điệp. Khi một node nhận được Remote Frame, nó sẽ kiểm tra Identifier trong khung yêu cầu. Nếu ID trong Remote Frame khớp với ID của một Data Frame mà node đó có, node đó sẽ biết rằng nó cần phản hồi yêu cầu. Node nhận yêu cầu sẽ gửi một Data Frame chứa dữ liệu mà node yêu cầu. Data Frame này sẽ có cùng Identifier như trong Remote Frame, cho phép node yêu cầu nhận được dữ liệu chính xác.
 
+![alt text](_assets/CAN_RemoteFrame.png)
+
 #### 3.3. Error frame
 Error Frame được sử dụng khi một node phát hiện ra lỗi trong quá trình truyền dữ liệu. Nó được gửi để thông báo cho các node khác rằng có lỗi đã xảy ra trên bus. Bất kỳ node nào phát hiện ra lỗi đều có thể gửi Error Frame. Error Frame gồm hai phần: Error Flag và Error Delimiter. Error Flag là chuỗi từ 6 đến 12 bit dominant, báo hiệu lỗi. Error Delimiter là chuỗi 8 bit recessive, kết thúc Error Frame.
 - Error Flag: 6 bits (0b000000)
 - Error Delimiter: 8 bits (0b11111111)
 
 Khi một thiết bị phát hiện lỗi trong một khung dữ liệu (ví dụ: lỗi CRC, lỗi bit), nó sẽ gửi một Error Frame để thông báo cho các thiết bị khác rằng có lỗi xảy ra. Điều này giúp đảm bảo rằng các thiết bị khác có thể thực hiện các hành động cần thiết, chẳng hạn như gửi lại thông điệp.
+
+![alt text](_assets/CAN_ErrorFrame.png)
 
 #### 3.4. Overload frame
 Overload Frame được sử dụng để thông báo rằng một thiết bị đang quá tải và không thể xử lý thông điệp mới.
@@ -169,6 +199,8 @@ Overload Frame được sử dụng để thông báo rằng một thiết bị 
         - Recessive (1): 8 bit liên tiếp là 1 (0b11111111).
     - Điều này có nghĩa là tất cả các bit trong Overload Delimiter đều là bit recessive.
 Khi một thiết bị không thể xử lý thông điệp mới (do quá tải hoặc lý do khác), nó sẽ gửi một Overload Frame để thông báo cho các thiết bị khác. Điều này giúp giảm thiểu lưu lượng trên bus và cho phép thiết bị quá tải có thời gian để xử lý các thông điệp hiện tại.
+
+![alt text](_assets/CAN_OverloadFrame.png)
 
 ### 4. Cấu trúc của một khung dữ liệu trong CAN
 
@@ -387,6 +419,8 @@ Nhược điểm:
 - Identifier nhỏ hơn (ưu tiên cao hơn) có thể "lấn át" các thiết bị khác nếu luôn muốn truyền.
 - Hạn chế khi bus quá tải.
 
+![alt text](_assets/CAN_Abitration.jpg)
+
 ### 6. Lỗi trong giao thức CAN
 #### 6.1. Bit Error (Lỗi Bit)
 - **Nguyên nhân**:
@@ -524,7 +558,7 @@ Time Quantum (TQ) là đơn vị thời gian cơ bản trong giao thức CAN, v�
 
 Giả sử đồng hồ hệ thống có tần số là 8 MHz. Điều này có nghĩa là mỗi chu kỳ đồng hồ sẽ có thời gian là:
 
-$${Thoi gian moi chu ky dong ho} = {1 \over 8000000} = 125ns$$
+$$\text{Thời gian mỗi chu kỳ đồng hồ} = {1 \over 8000000} = 125ns$$
 
 Vì vậy, 1 TQ = 125 ns.
 
@@ -544,11 +578,11 @@ Một Bit Time = SYNC_SEG + PROP_SEG + PHASE_SEG1 + PHASE_SEG2.
 - Baud Rate (tốc độ truyền) là 1 chia cho tổng số TQ trong một bit.
 - Tổng số TQ được tính bằng cách cộng các TQ từ các Segment lại.
 
-$${BaudRate} = {1 \over {TQ x {Số TQ trong 1 bit}}}$$
+$${BaudRate} = {1 \over {\text{TQ} \times \text{Số TQ trong 1 bit}}}$$
 
 Giả sử hệ thống sử dụng tần số đồng hồ 8 MHz (tương đương mỗi TQ là 125 ns). Tổng số TQ trong một bit là 20 (giả sử cho mỗi segment trong bit time, ta có SYNC_SEG = 1 TQ, PROP_SEG = 4 TQ, PHASE_SEG1 = 8 TQ, PHASE_SEG2 = 7 TQ).
 
-$${BaudRate} = {1 \over {125ns x 20}} = 400kbps$$
+$${BaudRate} = {1 \over {\text{125ns} \times {20}}} = 400kbps$$
 
 ### 8. Bộ Lọc CAN (CAN Filter)
 - Bộ lọc CAN cho phép thiết bị chỉ nhận những khung dữ liệu phù hợp với tiêu chí nhất định (thường là **Identifier**) và bỏ qua các khung không liên quan.
@@ -597,4 +631,77 @@ Kết quả:
   - Hệ thống phanh bỏ qua (không khớp với `0x200` - `0x2FF`).
   - Hệ thống đèn nhận (không áp dụng lọc).
 
+### Q&A:
+#### 1. Làm sao CAN nhận biết dược 2 bit liền kề ?
 
+CAN sử dụng một đồng hồ nội bộ với mỗi node CAN để đồng bộ hóa, nhưng không gửi tín hiệu clock riêng biệt. Thay vào đó, tín hiệu clock được lấy từ các cạnh tín hiệu trong luồng dữ liệu. Các nút CAN dựa vào sự thay đổi giữa các mức logic (cạnh lên hoặc cạnh xuống) để đồng bộ lại đồng hồ bên trong. Điều này gọi là edge-based synchronization.
+
+CAN chia mỗi bit thời gian thành nhiều phần nhỏ hơn, gọi là Time Quanta (TQ). Một chu kỳ bit trong CAN bao gồm: 4 đoạn chính:
+- Synchronization Segment (Sync-Seg): Phát hiện cạnh đầu tiên (lên hoặc xuống) để đồng bộ hóa.
+- Propagation Segment (Prop-Seg): Dành cho việc truyền tín hiệu qua mạng.
+- Phase Segment 1 (Phase-Seg1): Dùng để điều chỉnh nếu có sai lệch thời gian.
+- Phase Segment 2 (Phase-Seg2): Thời gian chờ trước khi nhận hoặc gửi bit tiếp theo.
+Tổng các đoạn này tạo thành thời gian của một bit. Khi nút CAN gửi bit đầu tiên (1), nó sử dụng đồng hồ nội bộ và kiểm tra cạnh tín hiệu để xác định thời gian truyền bit đó. Khi gửi bit thứ hai (1), nút này cũng gửi tín hiệu theo thời gian đã định (bit timing) và kiểm tra viền (cạnh) tín hiệu. Dù cả hai bit là 1, CAN vẫn biết chúng khác nhau vì chúng nằm trong khoảng thời gian khác nhau. 
+
+Để đảm bảo rằng các nút CAN nhận đúng các bit trong luồng dữ liệu, CAN áp dụng các cơ chế:
+- Resynchronization (Đồng bộ lại): Khi phát hiện cạnh tín hiệu, nút CAN sẽ điều chỉnh đồng hồ nội bộ nếu cần, để khớp với thời gian của mạng.
+- Bit Stuffing: Đảm bảo có đủ cạnh tín hiệu trong luồng dữ liệu để duy trì đồng bộ.
+
+Khi gửi (Transmitter):
+- Nếu phát hiện có 5 bit liên tiếp giống nhau, bên truyền sẽ chèn 1 bit đối lập.
+- Dữ liệu sau khi nhồi sẽ được gửi qua bus.
+
+Khi nhận (Receiver):
+- Bên nhận sẽ kiểm tra luồng bit trên bus.
+- Mỗi khi phát hiện 5 bit liên tiếp giống nhau, nó sẽ tự động loại bỏ bit thứ 6 (Stuff Bit).
+- Dữ liệu ban đầu (trước khi nhồi bit) sẽ được khôi phục chính xác.
+
+
+Nếu một cạnh tín hiệu thực tế xảy ra trong Sync-Seg hoặc rất gần đó, thì tín hiệu được coi là đồng bộ. Nếu không, điều chỉnh lại (resynchronization) sẽ được thực hiện. CAN controller liên tục giám sát tín hiệu trên đường truyền. Khi một cạnh tín hiệu (lên hoặc xuống) xảy ra, nó kiểm tra vị trí cạnh này so với vị trí dự kiến:
+- Nếu cạnh nằm ngoài phạm vi cho phép (ngoài Sync-Seg), điều này cho thấy đồng hồ của nút nhận bị lệch so với luồng tín hiệu.
+- Khoảng lệch này gọi là Phase Error (lỗi pha).
+
+Khi phát hiện lỗi pha, CAN controller thực hiện đồng bộ lại để khớp với tín hiệu thực tế.Quá trình này được thực hiện qua:
+- Hard Synchronization: Áp dụng khi một nút CAN vừa khởi động hoặc bắt đầu nhận một khung tin mới. Đồng hồ nội bộ được đặt lại hoàn toàn.
+- Phase Adjustment (Soft Synchronization): Điều chỉnh nhỏ Phase-Seg1 hoặc Phase-Seg2 để đồng bộ hóa với cạnh tín hiệu thực tế.
+
+#### 2. Trong mạng CAN, làm sao node truyền biết được node nhận ở xa và cần thời gian lâu để nhận ACK ?
+- Khi một nút truyền một khung dữ liệu, nút nhận phải gửi bit ACK trong trường ACK (ACK Slot) của khung dữ liệu đó.
+- Bit ACK này được gửi vào bit cuối cùng của CRC Delimiter trên bus.
+- Vì tất cả các nút trong mạng CAN đều sử dụng cùng một bus vật lý và hoạt động đồng bộ hóa, thời gian chờ để nhận ACK phụ thuộc vào:
+	- Tốc độ bit (Bit Rate) của mạng CAN.
+	- Độ trễ của bus (gồm thời gian truyền tín hiệu qua cáp và xử lý tại các nút nhận).
+
+Trong mỗi chu kỳ bit, tất cả các nút sử dụng cơ chế bit timing synchronization để đồng bộ hóa tín hiệu.
+- Bit Timing được chia thành các phần như Sync Segment, Propagation Segment, Phase Segment 1, và Phase Segment 2:
+- Propagation Segment (Prop-Seg): Được thiết kế để bù đắp trễ tín hiệu do khoảng cách vật lý và thời gian truyền qua cáp.
+
+Cách CAN hỗ trợ cho khoảng cách xa:
+- Thông qua việc cấu hình Propagation Segment trong bit timing:
+	- Ta có thể tính toán thời gian tối đa tín hiệu cần để di chuyển từ nút truyền tới nút nhận xa nhất và quay trở lại.
+	- Nếu khoảng cách xa, ta cần tăng giá trị Propagation Segment để đảm bảo nút truyền có đủ thời gian chờ tín hiệu phản hồi từ nút nhận.
+
+Tốc độ bit (bit rate) của mạng CAN ảnh hưởng trực tiếp đến khoảng cách tối đa giữa các nút:
+- Tốc độ bit cao (ví dụ: 1 Mbps) → Khoảng cách tối đa ngắn hơn.
+- Tốc độ bit thấp (ví dụ: 125 kbps) → Khoảng cách tối đa dài hơn.
+
+$$\text{Distance(m)}= {\text{Speed of Signal in Cable (m/s)} \over {{\text{Bit rate(bps)}} \times {2} \times {\text{Propagation Delay}}}}$$
+
+Ví dụ:
+- Tốc độ truyền tín hiệu: 200 x 10^6 m/s (trong cáp đồng)
+- Tốc độ bit: 125kps
+- propagation delay: 40ns/m
+
+Khoảng cách tối đa:
+
+$$\text{Distance(m)}= {{200} \times {10^6} \over {{{125} \times {10^3}} \times {2} \times {{40} \times {10^{-9}}}}} = 500m$$
+
+Nếu một nút truyền không nhận được ACK trong khoảng thời gian mong đợi:
+- Nút truyền sẽ đưa ra lỗi Acknowledgment (ACK Error).
+- Một lỗi được báo trong trường hợp không nút nào trên mạng kéo bit ACK xuống mức Dominant (0) trong trường ACK Slot.
+
+Khi cấu hình mạng CAN, bạn cần tính toán và điều chỉnh các thông số sau để hỗ trợ các nút nhận ở xa:
+- Giảm tốc độ bit (Bit Rate): Tốc độ thấp hơn sẽ tăng khoảng cách tối đa và thời gian chờ ACK.
+- Tăng Propagation Segment: Cho phép thời gian trễ lớn hơn giữa nút truyền và nút nhận.
+- Sử dụng dây cáp chất lượng cao: Cáp có đặc tính điện tốt (như độ suy hao thấp) giúp giảm propagation delay.
+- Cân nhắc về topology mạng: Tránh các mạng CAN với topology sao hoặc cấu trúc không cân bằng, vì chúng có thể gây ra vấn đề đồng bộ.

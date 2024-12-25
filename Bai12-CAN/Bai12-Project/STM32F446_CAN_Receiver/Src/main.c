@@ -42,7 +42,8 @@
 /* Private variables ---------------------------------------------------------*/
 
 /* USER CODE BEGIN PV */
-CANBusRxFrameDef RXFrame;
+CANBusTxFrameDef txFrame;
+CANBusRxFrameDef rxFrame;
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -98,15 +99,42 @@ int main(void)
 	CANBus_F446_Filter_Configuration();
 	CANBus_F446_Start();
   /* USER CODE END 2 */
-
+//	txFrame.identifier = 0x1A1;    // Standard ID
+//	txFrame.length = 8;            // 8 bytes of data
+//	txFrame.data[0] = 0xAA;
+//	txFrame.data[1] = 0xBB;
+//	txFrame.data[2] = 0xCC;
+//	txFrame.data[3] = 0xDD;
+//	txFrame.data[4] = 0x11;
+//	txFrame.data[5] = 0x22;
+//	txFrame.data[6] = 0x33;
+//	txFrame.data[7] = 0x44;
+//	
+//	CANBus_F446_SendMessage(&txFrame);
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
   while (1)
   {
     /* USER CODE END WHILE */
-		CANBus_F446_ReceiveMessage(&RXFrame);
+		CANBus_F446_ReceiveMessage(&rxFrame);
+		if (rxFrame.identifier == 0x1A1)
+		{
+			LL_GPIO_TogglePin(LD2_GPIO_Port, LD2_Pin);
+			delay_ms(2000);
+		}
+		else if (rxFrame.identifier == 0x4A3)
+		{
+			LL_GPIO_TogglePin(LD2_GPIO_Port, LD2_Pin);
+			delay_ms(1000);
+		}
+		else if (rxFrame.identifier == 0x5A1)
+		{
+			LL_GPIO_TogglePin(LD2_GPIO_Port, LD2_Pin);
+			delay_ms(500);
+		}
     /* USER CODE BEGIN 3 */
   }
+
   /* USER CODE END 3 */
 }
 
@@ -116,31 +144,43 @@ int main(void)
   */
 void SystemClock_Config(void)
 {
-  LL_FLASH_SetLatency(LL_FLASH_LATENCY_0);
-  while(LL_FLASH_GetLatency()!= LL_FLASH_LATENCY_0)
+  LL_FLASH_SetLatency(LL_FLASH_LATENCY_1);
+  while(LL_FLASH_GetLatency()!= LL_FLASH_LATENCY_1)
   {
   }
   LL_PWR_SetRegulVoltageScaling(LL_PWR_REGU_VOLTAGE_SCALE3);
   LL_PWR_DisableOverDriveMode();
-  LL_RCC_HSE_Enable();
+  LL_RCC_HSI_SetCalibTrimming(16);
+  LL_RCC_HSI_Enable();
 
-   /* Wait till HSE is ready */
-  while(LL_RCC_HSE_IsReady() != 1)
+   /* Wait till HSI is ready */
+  while(LL_RCC_HSI_IsReady() != 1)
   {
 
+  }
+  LL_RCC_PLL_ConfigDomain_SYS(LL_RCC_PLLSOURCE_HSI, LL_RCC_PLLM_DIV_8, 90, LL_RCC_PLLP_DIV_2);
+  LL_RCC_PLL_Enable();
+
+   /* Wait till PLL is ready */
+  while(LL_RCC_PLL_IsReady() != 1)
+  {
+
+  }
+  while (LL_PWR_IsActiveFlag_VOS() == 0)
+  {
   }
   LL_RCC_SetAHBPrescaler(LL_RCC_SYSCLK_DIV_2);
   LL_RCC_SetAPB1Prescaler(LL_RCC_APB1_DIV_1);
   LL_RCC_SetAPB2Prescaler(LL_RCC_APB2_DIV_1);
-  LL_RCC_SetSysClkSource(LL_RCC_SYS_CLKSOURCE_HSE);
+  LL_RCC_SetSysClkSource(LL_RCC_SYS_CLKSOURCE_PLL);
 
    /* Wait till System clock is ready */
-  while(LL_RCC_GetSysClkSource() != LL_RCC_SYS_CLKSOURCE_STATUS_HSE)
+  while(LL_RCC_GetSysClkSource() != LL_RCC_SYS_CLKSOURCE_STATUS_PLL)
   {
 
   }
-  LL_Init1msTick(4000000);
-  LL_SetSystemCoreClock(4000000);
+  LL_Init1msTick(45000000);
+  LL_SetSystemCoreClock(45000000);
   LL_RCC_SetTIMPrescaler(LL_RCC_TIM_PRESCALER_TWICE);
 }
 
@@ -164,7 +204,7 @@ static void MX_TIM2_Init(void)
   /* USER CODE BEGIN TIM2_Init 1 */
 
   /* USER CODE END TIM2_Init 1 */
-  TIM_InitStruct.Prescaler = 399;
+  TIM_InitStruct.Prescaler = 4499;
   TIM_InitStruct.CounterMode = LL_TIM_COUNTERMODE_UP;
   TIM_InitStruct.Autoreload = 9;
   TIM_InitStruct.ClockDivision = LL_TIM_CLOCKDIVISION_DIV1;

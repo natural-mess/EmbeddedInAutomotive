@@ -1,0 +1,28 @@
+--cpu=Cortex-M4.fp.sp --branchpatch=sdcomp-29491-629360
+"l476_can_loopback_hal\startup_stm32l476xx.o"
+"l476_can_loopback_hal\main.o"
+"l476_can_loopback_hal\stm32l4xx_it.o"
+"l476_can_loopback_hal\stm32l4xx_hal_msp.o"
+"l476_can_loopback_hal\stm32l4xx_hal_can.o"
+"l476_can_loopback_hal\stm32l4xx_hal.o"
+"l476_can_loopback_hal\stm32l4xx_hal_rcc.o"
+"l476_can_loopback_hal\stm32l4xx_hal_rcc_ex.o"
+"l476_can_loopback_hal\stm32l4xx_hal_flash.o"
+"l476_can_loopback_hal\stm32l4xx_hal_flash_ex.o"
+"l476_can_loopback_hal\stm32l4xx_hal_flash_ramfunc.o"
+"l476_can_loopback_hal\stm32l4xx_hal_gpio.o"
+"l476_can_loopback_hal\stm32l4xx_hal_i2c.o"
+"l476_can_loopback_hal\stm32l4xx_hal_i2c_ex.o"
+"l476_can_loopback_hal\stm32l4xx_hal_dma.o"
+"l476_can_loopback_hal\stm32l4xx_hal_dma_ex.o"
+"l476_can_loopback_hal\stm32l4xx_hal_pwr.o"
+"l476_can_loopback_hal\stm32l4xx_hal_pwr_ex.o"
+"l476_can_loopback_hal\stm32l4xx_hal_cortex.o"
+"l476_can_loopback_hal\stm32l4xx_hal_exti.o"
+"l476_can_loopback_hal\stm32l4xx_hal_tim.o"
+"l476_can_loopback_hal\stm32l4xx_hal_tim_ex.o"
+"l476_can_loopback_hal\system_stm32l4xx.o"
+--strict --scatter "L476_CAN_LoopBack_HAL\L476_CAN_LoopBack_HAL.sct"
+--summary_stderr --info summarysizes --map --load_addr_map_info --xref --callgraph --symbols
+--info sizes --info totals --info unused --info veneers
+--list "L476_CAN_LoopBack_HAL.map" -o L476_CAN_LoopBack_HAL\L476_CAN_LoopBack_HAL.axf

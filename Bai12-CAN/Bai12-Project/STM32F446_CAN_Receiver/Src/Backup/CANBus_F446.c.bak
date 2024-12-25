@@ -6,11 +6,22 @@ void CANBus_F446_Pins_Init(void)
 	/*Enable clock access to GPIOB*/
 	RCC->AHB1ENR |= RCC_AHB1ENR_GPIOBEN;
 	
+	/* Configure PB8 as Pull-Up */
+  GPIOB->PUPDR &= ~(GPIO_PUPDR_PUPD8_Msk);  // Clear PUPD bits for PB8
+  GPIOB->PUPDR |= (1U << GPIO_PUPDR_PUPD8_Pos);  // Set PULL-UP (01)
+	
+	//GPIOB->MODER &= ~GPIO_MODER_MODE8; // MODER8[1:0] = 00 (Input mode)
+	//GPIOB->PUPDR &= ~GPIO_PUPDR_PUPD8; // PUPD8[1:0] = 00 (No pull-up, no pull-down)
+	
 	GPIOB->MODER |=   GPIO_MODER_MODE8_1|GPIO_MODER_MODE9_1;
 	GPIOB->MODER &=~ (GPIO_MODER_MODE8_0|GPIO_MODER_MODE9_0);
 	
+	//GPIOB->MODER |=   GPIO_MODER_MODE9_1;
+	//GPIOB->MODER &=~ GPIO_MODER_MODE9_0;
+	
 	/*Configure PB8 and PB9 to use CAN Bus AF*/
 	GPIOB->AFR[1] |= (CAN_AF<<GPIO_AFRH_AFSEL8_Pos)|(CAN_AF<<GPIO_AFRH_AFSEL9_Pos);
+	//GPIOB->AFR[1] |= CAN_AF<<GPIO_AFRH_AFSEL9_Pos;
 }
 
 void CANBus_F446_Init(void)
@@ -31,14 +42,18 @@ void CANBus_F446_Init(void)
 	 * Normal mode.
 	 * Loop back mode is disabled.
 	 * Resynchronization jump width to 1 (value - 1).
-	 * Prescale of 10. (value - 1)
-	 * Time quanta segment 1 is 2 (value - 1)
-	 * Time quanta segment 2 is 1 (value - 1)
-	 * Baud is 100kbps
+	 * Prescale of 6. (value - 1)
+	 * Time quanta segment 1 is 6 (value - 1)
+	 * Time quanta segment 2 is 8 (value - 1)
+	 * Baud is 500kbps
 	 * */
 	/*Reset the non-zero initial values*/
   CAN1->BTR &=~ (CAN_BTR_TS1_Msk|CAN_BTR_TS2_Msk|CAN_BTR_SJW_Msk);
-  CAN1->BTR  =  (1<<CAN_BTR_TS1_Pos)|(0<<CAN_BTR_TS2_Pos)|(9U<<CAN_BTR_BRP_Pos);
+  CAN1->BTR  =  (6<<CAN_BTR_TS1_Pos)|(8<<CAN_BTR_TS2_Pos)|(6U<<CAN_BTR_BRP_Pos);
+		
+	CAN1->MCR |= CAN_MCR_AWUM;  // Enable Automatic Wake-Up
+  CAN1->MCR &= ~CAN_MCR_NART; // BEnablet Automatic Retransmission
+  CAN1->MCR |= CAN_MCR_TXFP;  // Enable Transmit FIFO Priority
 }
 
 void CANBus_F446_Filter_Configuration(void)
@@ -81,7 +96,14 @@ void CANBus_F446_Start(void)
 void CANBus_F446_SendMessage(CANBusTxFrameDef *TXFrame)
 {
 	// Wait until the transmit mailbox is empty
-  while ((CAN1->TSR & CAN_TSR_TME0) == 0){}
+  uint32_t timeout = 100000;
+	
+	// Wait until the transmit mailbox is empty
+  while ((CAN1->TSR & CAN_TSR_TME0) == 0U && timeout--){}
+  if (timeout == 0) {
+    // Mailbox không kh? d?ng, x? lý l?i
+    return;
+  }
 	
 	// Set the standard identifier and data length
   CAN1->sTxMailBox[0].TIR &= ~CAN_TI0R_STID;
@@ -106,6 +128,17 @@ void CANBus_F446_SendMessage(CANBusTxFrameDef *TXFrame)
 	
 	// Set the TXRQ bit to request transmission
   CAN1->sTxMailBox[0].TIR |= CAN_TI0R_TXRQ;
+	
+	// Wait for transmission to complete
+  timeout = 100000;
+  while ((CAN1->TSR & CAN_TSR_RQCP0) == 0U && timeout--);
+  if (timeout == 0) {
+     // Transmission failed
+     return;
+  }
+
+  // Clear the request complete flag
+  CAN1->TSR |= CAN_TSR_RQCP0;
 }
 
 void CANBus_F446_ReceiveMessage(CANBusRxFrameDef *RXFrame)

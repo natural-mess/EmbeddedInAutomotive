@@ -3,7 +3,7 @@
 <title>Static Call Graph - [STM32L476_CAN_Transmitter\STM32L476_CAN_Transmitter.axf]</title></head>
 <body><HR>
 <H1>Static Call Graph for image STM32L476_CAN_Transmitter\STM32L476_CAN_Transmitter.axf</H1><HR>
-<BR><P>#&#060CALLGRAPH&#062# ARM Linker, 6220000: Last Updated: Sun Dec 15 23:18:41 2024
+<BR><P>#&#060CALLGRAPH&#062# ARM Linker, 6220000: Last Updated: Sun Dec 22 20:12:13 2024
 <BR><P>
 <H3>Maximum Stack Usage =         68 bytes + Unknown(Functions without stacksize, Cycles, Untraceable Function Pointers)</H3><H3>
 Call chain for Maximum Stack Depth:</H3>
@@ -571,20 +571,22 @@ Global Symbols
 </UL>
 <BR>[Address Reference Count : 1]<UL><LI> startup_stm32l476xx.o(RESET)
 </UL>
-<P><STRONG><a name="[78]"></a>CANBus_L476_Filter_Configuration</STRONG> (Thumb, 78 bytes, Stack size 0 bytes, canbus_l476.o(.text.CANBus_L476_Filter_Configuration))
+<P><STRONG><a name="[78]"></a>CANBus_L476_Filter_Configuration</STRONG> (Thumb, 76 bytes, Stack size 0 bytes, canbus_l476.o(.text.CANBus_L476_Filter_Configuration))
 <BR><BR>[Called By]<UL><LI><a href="#[68]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;main
 </UL>
 
-<P><STRONG><a name="[77]"></a>CANBus_L476_Init</STRONG> (Thumb, 124 bytes, Stack size 0 bytes, canbus_l476.o(.text.CANBus_L476_Init))
+<P><STRONG><a name="[77]"></a>CANBus_L476_Init</STRONG> (Thumb, 150 bytes, Stack size 0 bytes, canbus_l476.o(.text.CANBus_L476_Init))
 <BR><BR>[Called By]<UL><LI><a href="#[68]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;main
 </UL>
 
-<P><STRONG><a name="[76]"></a>CANBus_L476_Pins_Init</STRONG> (Thumb, 66 bytes, Stack size 0 bytes, canbus_l476.o(.text.CANBus_L476_Pins_Init))
+<P><STRONG><a name="[76]"></a>CANBus_L476_Pins_Init</STRONG> (Thumb, 74 bytes, Stack size 0 bytes, canbus_l476.o(.text.CANBus_L476_Pins_Init))
 <BR><BR>[Called By]<UL><LI><a href="#[68]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;main
 </UL>
 
-<P><STRONG><a name="[7a]"></a>CANBus_L476_SendMessage</STRONG> (Thumb, 90 bytes, Stack size 0 bytes, canbus_l476.o(.text.CANBus_L476_SendMessage))
-<BR><BR>[Called By]<UL><LI><a href="#[68]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;main
+<P><STRONG><a name="[7b]"></a>CANBus_L476_SendMessage</STRONG> (Thumb, 430 bytes, Stack size 8 bytes, canbus_l476.o(.text.CANBus_L476_SendMessage))
+<BR><BR>[Stack]<UL><LI>Max Depth = 8<LI>Call Chain = CANBus_L476_SendMessage
+</UL>
+<BR>[Called By]<UL><LI><a href="#[68]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;main
 </UL>
 
 <P><STRONG><a name="[79]"></a>CANBus_L476_Start</STRONG> (Thumb, 54 bytes, Stack size 0 bytes, canbus_l476.o(.text.CANBus_L476_Start))
@@ -619,7 +621,7 @@ Global Symbols
 <BR><BR>[Called By]<UL><LI><a href="#[68]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;main
 </UL>
 
-<P><STRONG><a name="[7b]"></a>LL_mDelay</STRONG> (Thumb, 70 bytes, Stack size 4 bytes, stm32l4xx_ll_utils.o(.text.LL_mDelay))
+<P><STRONG><a name="[7a]"></a>LL_mDelay</STRONG> (Thumb, 70 bytes, Stack size 4 bytes, stm32l4xx_ll_utils.o(.text.LL_mDelay))
 <BR><BR>[Stack]<UL><LI>Max Depth = 4<LI>Call Chain = LL_mDelay
 </UL>
 <BR>[Called By]<UL><LI><a href="#[68]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;main
@@ -648,7 +650,7 @@ Global Symbols
 <P><STRONG><a name="[9]"></a>SysTick_Handler</STRONG> (Thumb, 2 bytes, Stack size 0 bytes, stm32l4xx_it.o(.text.SysTick_Handler))
 <BR>[Address Reference Count : 1]<UL><LI> startup_stm32l476xx.o(RESET)
 </UL>
-<P><STRONG><a name="[71]"></a>SystemClock_Config</STRONG> (Thumb, 320 bytes, Stack size 8 bytes, main.o(.text.SystemClock_Config))
+<P><STRONG><a name="[71]"></a>SystemClock_Config</STRONG> (Thumb, 408 bytes, Stack size 8 bytes, main.o(.text.SystemClock_Config))
 <BR><BR>[Stack]<UL><LI>Max Depth = 8<LI>Call Chain = SystemClock_Config
 </UL>
 <BR>[Calls]<UL><LI><a href="#[73]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;LL_SetSystemCoreClock
@@ -667,14 +669,14 @@ Global Symbols
 </UL>
 <BR>[Address Reference Count : 1]<UL><LI> startup_stm32l476xx.o(RESET)
 </UL>
-<P><STRONG><a name="[68]"></a>main</STRONG> (Thumb, 338 bytes, Stack size 32 bytes, main.o(.text.main))
+<P><STRONG><a name="[68]"></a>main</STRONG> (Thumb, 410 bytes, Stack size 32 bytes, main.o(.text.main))
 <BR><BR>[Stack]<UL><LI>Max Depth = 68<LI>Call Chain = main &rArr; LL_GPIO_Init
 </UL>
-<BR>[Calls]<UL><LI><a href="#[7b]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;LL_mDelay
+<BR>[Calls]<UL><LI><a href="#[7a]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;LL_mDelay
 <LI><a href="#[75]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;LL_TIM_Init
 <LI><a href="#[74]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;LL_GPIO_Init
 <LI><a href="#[71]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;SystemClock_Config
-<LI><a href="#[7a]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;CANBus_L476_SendMessage
+<LI><a href="#[7b]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;CANBus_L476_SendMessage
 <LI><a href="#[79]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;CANBus_L476_Start
 <LI><a href="#[78]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;CANBus_L476_Filter_Configuration
 <LI><a href="#[77]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;CANBus_L476_Init

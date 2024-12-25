@@ -400,11 +400,6 @@
               <FilePath>..\Src\CANBus_F446.c</FilePath>
             </File>
             <File>
-              <FileName>CANBus.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\Src\CANBus.c</FilePath>
-            </File>
-            <File>
               <FileName>main.c</FileName>
               <FileType>1</FileType>
               <FilePath>../Src/main.c</FilePath>
