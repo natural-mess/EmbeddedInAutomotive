@@ -51,3 +51,7 @@ Using STM32 to learn about Automotive
 - [Bài 12 - Lý thuyết](Bai12-CAN/Bai12-LyThuyet/Bai12-CAN.md)
 - [Bài 12 - Software](Bai12-CAN/Bai12-LyThuyet/Bai12-CAN_Software.md)
 - [Bài 12 - Project](Bai12-CAN/Bai12-Project/)
+
+### Bài 13 - LIN
+- [Bài 13 - Lý thuyết](Bai13-LIN/Bai13-LyThuyet/Bai13-LIN.md)
+- [Bài 13 - Project](Bai13-LIN/Bai13-Project/)
