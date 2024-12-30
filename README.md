@@ -55,3 +55,7 @@ Using STM32 to learn about Automotive
 ### Bài 13 - LIN
 - [Bài 13 - Lý thuyết](Bai13-LIN/Bai13-LyThuyet/Bai13-LIN.md)
 - [Bài 13 - Project](Bai13-LIN/Bai13-Project/)
+
+### Bài 14 - AUTOSAR
+- [Bài 14 - Lý thuyết](Bai14-AUTOSAR/Bai14-LyThuyet/Bai14-AUTOSAR.md)
+- [Bài 14 - Project](Bai14-AUTOSAR/Bai14-Project/)
