@@ -1,7 +1,7 @@
 /**
  * @file        Dio.h
  * @author      Phuc
- * @brief       Standard types for AUTOSAR
+ * @brief       Dio driver header file in AUTOSAR
  * @version     1.0
  * @date        2024-12-29
  * 
