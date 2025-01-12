@@ -17,7 +17,7 @@
  * Includes
  ************************************************************************************************************
  */
-#include <Std_Types.h>
+#include "Std_Types.h"
 
 /*
  ************************************************************************************************************
@@ -62,7 +62,7 @@ typedef enum
     SPI_SEQ_OK = 0x00,              /* The last transmission of the Sequence has been finished successfully. */
     SPI_SEQ_PENDING = 0x01,         /* The SPI Handler/Driver is performing a SPI Sequence. The meaning of this status is equal to SPI_BUSY. */
     SPI_SEQ_FAILED = 0x02,          /* The last transmission of the Sequence has failed. */
-    SPI_SEQ_QUEUED = 0x03           /* The last transmission of the Sequence has been canceled by user. */
+    SPI_SEQ_CANCELED = 0x03           /* The last transmission of the Sequence has been canceled by user. */
 }  Spi_SeqResultType;
 
 /**
@@ -74,9 +74,9 @@ typedef enum
 {
     SPI_POLLING_MODE = 0x00,           /* The asynchronous mechanism is ensured by polling, so interrupts related to SPI busses
                                         * handled asynchronously are disabled. */
-    SPI_INTERRUPT_MODE = 0x01,         /* The asynchronous mechanism is ensured by interrupt, so interrupts related to SPI busses
+    SPI_INTERRUPT_MODE = 0x01         /* The asynchronous mechanism is ensured by interrupt, so interrupts related to SPI busses
                                         * handled asynchronously are enabled. */
-}  Spi_SeqResultType;
+}  Spi_AsyncModeType;
 
 /**
  * @typedef     Spi_DataBufferType
@@ -122,6 +122,62 @@ typedef uint8 Spi_SequenceType;
  */
 typedef uint8 Spi_HWUnitType;
 
+/** 
+ * @typedef     Spi_BaudRateType
+ * @brief       Type definition for SPI baud rate.
+ */
+typedef uint16_t Spi_BaudRateType;  
+
+/** 
+ * @typedef     Spi_ClockPolarityType
+ * @brief       Enumeration for SPI clock polarity.
+ */
+typedef enum 
+{
+    SPI_CPOL_LOW = 0,    /**< Clock polarity is low */
+    SPI_CPOL_HIGH = 1    /**< Clock polarity is high */
+} Spi_ClockPolarityType;
+
+/** 
+ * @typedef     Spi_ClockPhaseType
+ * @brief       Enumeration for SPI clock phase.
+ */
+typedef enum 
+{
+    SPI_CPHA_1EDGE = 0,  /**< First edge is used for data capture */
+    SPI_CPHA_2EDGE = 1    /**< Second edge is used for data capture */
+} Spi_ClockPhaseType;
+
+/** 
+ * @typedef     Spi_ModeType
+ * @brief       Enumeration for SPI operating mode.
+ */
+typedef enum 
+{
+    SPI_MODE_MASTER = 0,  /**< SPI operates in master mode */
+    SPI_MODE_SLAVE = 1    /**< SPI operates in slave mode */
+} Spi_ModeType;
+
+/** 
+ * @typedef     Spi_NSSManagementType
+ * @brief       Enumeration for NSS (Slave Select) management.
+ */
+typedef enum 
+{
+    SPI_NSS_SOFT = 0,     /**< Software management of NSS */
+    SPI_NSS_HARD = 1      /**< Hardware management of NSS */
+} Spi_NSSManagementType;
+
+/** 
+ * @typedef     Spi_DataSizeType
+ * @brief       Enumeration for data size in SPI communication.
+ */
+typedef enum 
+{
+    SPI_DATASIZE_8BIT = 0,  /**< 8-bit data size */
+    SPI_DATASIZE_16BIT = 1   /**< 16-bit data size */
+} Spi_DataSizeType;
+
 /**
  * @typedef     Spi_ConfigType
  * @brief       The contents of the initialization data structure are SPI specific.
@@ -142,6 +198,13 @@ typedef struct
     Spi_NSSManagementType NSS;      /* NSS management (optional, default value mode is hardware) */
     Spi_DataSizeType DataSize;      /* Data size (optional, default value mode is 8 bit) */
 } Spi_ConfigType;
+
+/*
+ ************************************************************************************************************
+ * Inline functions
+ ************************************************************************************************************
+ */
+
 
 /*
  ************************************************************************************************************

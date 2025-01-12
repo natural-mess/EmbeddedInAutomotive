@@ -14,7 +14,9 @@
  * Includes
  ************************************************************************************************************
  */
-#include <Spi_Cfg.h>
+#include "Spi.h"
+#include "Spi_Hw.h"
+#include "Spi_Cfg.h"
 
 /*
  ************************************************************************************************************
@@ -207,6 +209,9 @@ Std_ReturnType Spi_AsyncTransmit (Spi_SequenceType Sequence)
         Spi_JobType currentJob = SequenceConfig->Jobs[jobIndex];
 
         /* Take current Job configuration */
+        const Spi_JobConfigType* JobConfig = &Spi_Jobs[currentJob];
+
+        /* Take SPI channel from JobConfig */
         Spi_ChannelType channel = JobConfig->Channel;
 
         /* Send data for the current Job through corresponding channel */
@@ -214,17 +219,17 @@ Std_ReturnType Spi_AsyncTransmit (Spi_SequenceType Sequence)
         {
         case SPI_CHANNEL_1:
             /* Send data using SPI1 */
-            Spi_WriteIB(SPI_CHANNEL_1, &JobConfig->DataBuffer);
+            Spi_WriteIB(SPI_CHANNEL_1, JobConfig->DataBuffer);
             break;
 
         case SPI_CHANNEL_2:
             /* Send data using SPI2 */
-            Spi_WriteIB(SPI_CHANNEL_2, &JobConfig->DataBuffer);
+            Spi_WriteIB(SPI_CHANNEL_2, JobConfig->DataBuffer);
             break;
 
         case SPI_CHANNEL_3:
             /* Send data using SPI3 */
-            Spi_WriteIB(SPI_CHANNEL_3, &JobConfig->DataBuffer);
+            Spi_WriteIB(SPI_CHANNEL_3, JobConfig->DataBuffer);
             break;
         
         default:
@@ -258,7 +263,7 @@ Std_ReturnType Spi_ReadIB (Spi_ChannelType Channel, Spi_DataBufferType* DataBuff
     }
 
     /* Check if data buffer is null */
-    if (DataBufferPtr == NULL_PTR)
+    if (DataBufferPointer == NULL_PTR)
     {
         return E_NOT_OK;  /* Invalid data buffer */
     }
@@ -322,7 +327,7 @@ Std_ReturnType Spi_SetupEB (Spi_ChannelType Channel,
         return E_NOT_OK;
     }
 
-    if ((SrcDataBufferPtr == NULL) || (DesDataBufferPtr == NULL) || (Length == 0)) 
+    if ((SrcDataBufferPtr == NULL_PTR) || (DesDataBufferPtr == NULL_PTR) || (Length == 0)) 
     {
         return E_NOT_OK;  /* Return error if pointers are NULL or length is zero */
     }
@@ -413,17 +418,17 @@ Spi_JobResultType Spi_GetJobResult (Spi_JobType Job)
     }
 
     /* Base on onoing Job, check corresponding SPI channel */
-    if (Job == SPI_JOB_SEND_DATA_TO_ESP32_SPI1 || Job == SPI_JOB_RECEIVE_DATA_FROM_ESP32_SPI1)
+    if (Job == SPI_JOB_0 || Job == SPI_JOB_1)
     {
         /* Check Job status on SPI1 */
         return Spi_Hw_CheckJobStatus_SPI1();
     }
-    else if (Job == SPI_JOB_SEND_DATA_TO_ESP32_SPI2 || Job == SPI_JOB_RECEIVE_DATA_FROM_ESP32_SPI2)
+    else if (Job == SPI_JOB_2 || Job == SPI_JOB_3)
     {
         /* Check Job status on SPI2 */
         return Spi_Hw_CheckJobStatus_SPI2();
     }
-    else if (Job == SPI_JOB_SEND_DATA_TO_ESP32_SPI3 || Job == SPI_JOB_RECEIVE_DATA_FROM_ESP32_SPI3)
+    else if (Job == SPI_JOB_4 || Job == SPI_JOB_5)
     {
         /* Check Job status on SPI3 */
         return Spi_Hw_CheckJobStatus_SPI3();
@@ -445,21 +450,21 @@ Spi_SeqResultType Spi_GetSequenceResult(Spi_SequenceType Sequence)
     /* Check SPI status */
     if (SpiStatus == SPI_UNINIT)
     {
-        return SPI_JOB_FAILED; /* SPI has not been initialized */
+        return SPI_SEQ_FAILED; /* SPI has not been initialized */
     }
 
     /* Base on ongoing Sequence, check status of corresponding SPI */
-    if (Sequence == SPI_SEQUENCE_0 || Sequence == SPI_SEQUENCE_1) 
+    if (Sequence == SPI_SEQUENCE_0) 
     {
         /* Check status of Sequence on SPI1 */
         return Spi_Hw_CheckSequenceStatus_SPI1();
     }
-    else if (Sequence == SPI_SEQUENCE_2 || Sequence == SPI_SEQUENCE_3) 
+    else if (Sequence == SPI_SEQUENCE_1) 
     {
         /* Check status of Sequence on SPI2 */
         return Spi_Hw_CheckSequenceStatus_SPI2();
     }
-    else if (Sequence == SPI_SEQUENCE_4 || Sequence == SPI_SEQUENCE_5) 
+    else if (Sequence == SPI_SEQUENCE_2) 
     {
         /* Check status of Sequence on SPI3 */
         return Spi_Hw_CheckSequenceStatus_SPI3();
@@ -467,7 +472,7 @@ Spi_SeqResultType Spi_GetSequenceResult(Spi_SequenceType Sequence)
     else
     {
         /* If Sequence is invalid */
-        return SPI_SEQUENCE_FAILED;
+        return SPI_SEQ_FAILED;
     }
 }
 
@@ -504,7 +509,7 @@ void Spi_GetVersionInfo(Std_VersionInfoType* VersionInfo)
 Std_ReturnType Spi_SyncTransmit(Spi_SequenceType Sequence)
 {
     /* Check SPI status */
-    if (Spi_Status == SPI_UNINIT)
+    if (SpiStatus == SPI_UNINIT)
     {
         return E_NOT_OK;    /* SPI has not been initialized*/
     }
@@ -570,23 +575,23 @@ Spi_StatusType Spi_GetHWUnitStatus(Spi_HWUnitType HWUnit)
 void Spi_Cancel(Spi_SequenceType Sequence)
 {
     /* Check SPI status */
-    if (Spi_Status == SPI_UNINIT)
+    if (SpiStatus == SPI_UNINIT)
     {
         return;    /* SPI has not been initialized*/
     }
 
     /* Base on Sequence, cancel ongoing transmission on corresponding SPI */
-    if (Sequence == SPI_SEQUENCE_0 || Sequence == SPI_SEQUENCE_1) 
+    if (Sequence == SPI_SEQUENCE_0) 
     {
         /* Cancel transmission on SPI1 */
         Spi_Hw_Cancel_SPI1();
     }
-    else if (Sequence == SPI_SEQUENCE_2 || Sequence == SPI_SEQUENCE_3) 
+    else if (Sequence == SPI_SEQUENCE_1) 
     {
         /* Cancel transmission on SPI2 */
         Spi_Hw_Cancel_SPI2();
     }
-    else if (Sequence == SPI_SEQUENCE_4 || Sequence == SPI_SEQUENCE_5) 
+    else if (Sequence == SPI_SEQUENCE_2) 
     {
         /* Cancel transmission on SPI3 */
         Spi_Hw_Cancel_SPI3();
@@ -610,7 +615,7 @@ void Spi_Cancel(Spi_SequenceType Sequence)
 Std_ReturnType Spi_SetAsyncMode(Spi_AsyncModeType Mode)
 {
     /* Check SPI status */
-    if (Spi_Status == SPI_UNINIT)
+    if (SpiStatus == SPI_UNINIT)
     {
         return E_NOT_OK;    /* SPI has not been initialized*/
     }

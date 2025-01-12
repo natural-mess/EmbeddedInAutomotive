@@ -21,7 +21,7 @@
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
-
+#include "Spi.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -92,12 +92,25 @@ int main(void)
   /* USER CODE END SysInit */
 
   /* Initialize all configured peripherals */
-  MX_GPIO_Init();
-  MX_SPI1_Init();
-  MX_SPI2_Init();
-  MX_SPI3_Init();
+  //MX_GPIO_Init();
+  //MX_SPI1_Init();
+  //MX_SPI2_Init();
+  //MX_SPI3_Init();
   /* USER CODE BEGIN 2 */
-
+	Spi_ConfigType* ConfigPtr;
+	ConfigPtr->BaudRate = 0;
+	ConfigPtr->Channel = 0;
+	ConfigPtr->CPHA = 0;
+	ConfigPtr->CPOL = 0;
+	ConfigPtr->DataSize = 0;
+	ConfigPtr->Mode = 0;
+	ConfigPtr->NSS = 0;
+	ConfigPtr->Sequence = 0;
+	ConfigPtr->Job = 0;
+	Spi_Init(ConfigPtr);
+	
+	Spi_AsyncTransmit(0);
+	Spi_DeInit();
   /* USER CODE END 2 */
 
   /* Infinite loop */

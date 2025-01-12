@@ -1,0 +1,16 @@
+--cpu=Cortex-M4.fp.sp --branchpatch=sdcomp-29491-629360
+"stm32l476_autosar_adc\startup_stm32l476xx.o"
+"stm32l476_autosar_adc\main.o"
+"stm32l476_autosar_adc\stm32l4xx_it.o"
+"stm32l476_autosar_adc\stm32l4xx_ll_utils.o"
+"stm32l476_autosar_adc\stm32l4xx_ll_exti.o"
+"stm32l476_autosar_adc\stm32l4xx_ll_gpio.o"
+"stm32l476_autosar_adc\stm32l4xx_ll_adc.o"
+"stm32l476_autosar_adc\stm32l4xx_ll_dma.o"
+"stm32l476_autosar_adc\stm32l4xx_ll_pwr.o"
+"stm32l476_autosar_adc\system_stm32l4xx.o"
+"stm32l476_autosar_adc\adc.o"
+--strict --scatter "STM32L476_AUTOSAR_Adc\STM32L476_AUTOSAR_Adc.sct"
+--summary_stderr --info summarysizes --map --load_addr_map_info --xref --callgraph --symbols
+--info sizes --info totals --info unused --info veneers
+--list "STM32L476_AUTOSAR_Adc.map" -o STM32L476_AUTOSAR_Adc\STM32L476_AUTOSAR_Adc.axf
