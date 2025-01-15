@@ -18,6 +18,7 @@
  ************************************************************************************************************
  */
 #include "Std_Types.h"
+#include "Can.h"
 #include "ComStack_Types.h"
 
 /*
@@ -25,6 +26,14 @@
  * Types and Defines
  ************************************************************************************************************
  */
+ /** 
+ * @typedef     Can_IdType
+ * @brief       Represents the Identifier of an L-PDU. The two most significant bits specify the frame type: 00
+ *              CAN message with Standard CAN ID 01 CAN FD frame with Standard CAN ID 10 CAN message
+ *              with Extended CAN ID 11 CAN FD frame with Extended CAN ID
+ */
+typedef uint32 Can_IdType;
+
 /** 
  * @typedef     Can_PduType
  * @brief       This type unites PduId (swPduHandle), SduLength (length), SduData (sdu), and CanId (id) for any
@@ -36,14 +45,6 @@ typedef struct {
     Can_IdType id;
     uint8 *sdu;    
 } Can_PduType;
-
-/** 
- * @typedef     Can_IdType
- * @brief       Represents the Identifier of an L-PDU. The two most significant bits specify the frame type: 00
- *              CAN message with Standard CAN ID 01 CAN FD frame with Standard CAN ID 10 CAN message
- *              with Extended CAN ID 11 CAN FD frame with Extended CAN ID
- */
-typedef uint32 Can_IdType;
 
 /** 
  * @typedef     Can_HwHandleType

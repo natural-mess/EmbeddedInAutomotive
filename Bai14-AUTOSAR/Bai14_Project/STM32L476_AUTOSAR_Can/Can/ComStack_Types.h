@@ -51,7 +51,7 @@ typedef struct
                                 and type of the meta data items is statically configured for each PDU.
                                 Meta data items with more than 8 bits use platform byte order. */
     PduLengthType SduLength;    /* Length of the SDU in bytes. */
-}
+}PduInfoType;
 
 
 /*
